@@ -1,6 +1,6 @@
 class ApiService {
     constructor() {
-        this.baseURL = 'http://localhost:3000/api/v1';
+        this.baseURL = '/api/v1';
     }
 
     getToken() {
