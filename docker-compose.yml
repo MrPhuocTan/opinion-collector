@@ -22,9 +22,6 @@ services:
       - DB_HOST=postgres
     depends_on:
       - postgres
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
     networks:
       - ocs_network
     command: npm start
