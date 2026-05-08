@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ocs_postgres
+    environment:
+      POSTGRES_USER: ocs_user
+      POSTGRES_PASSWORD: ocs_password_2024
+      POSTGRES_DB: opinion_collector
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+    networks:
+      - ocs_network
+
+  backend:
+    build: ./backend
+    container_name: ocs_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - ocs_network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
+networks:
+  ocs_network:
+    driver: bridge

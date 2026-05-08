@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Làm khảo sát - Opinion Collector</title>
+   <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+   <nav class="navbar">
+       <div class="container">
+           <div class="navbar-content">
+               <div>
+                   <a href="user-dashboard.html" style="text-decoration: none; color: inherit;">
+                       ← Quay lại
+                   </a>
+               </div>
+               <div>
+                   <span id="userName">User</span>
+                   <button class="btn btn-danger" onclick="AUTH.logout()">Đăng xuất</button>
+               </div>
+           </div>
+       </div>
+   </nav>
+
+   <div class="container">
+       <div class="card">
+           <h1 id="requestName">Loading...</h1>
+           <div id="requestDescription" style="margin-bottom: 1rem;"></div>
+           
+           <div class="progress-container" style="margin-top: 1rem;">
+               <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                   <span>Tiến độ hoàn thành</span>
+                   <span id="progressText">0/0</span>
+               </div>
+               <div class="progress">
+                   <div id="progressBar" class="progress-bar" style="width: 0%">0%</div>
+               </div>
+           </div>
+       </div>
+
+       <div id="questionsContainer"></div>
+
+       <div style="text-align: center; margin: 2rem 0;">
+           <button class="btn btn-primary" onclick="submitAnswers()" style="padding: 0.75rem 2rem;">
+               Gửi khảo sát
+           </button>
+       </div>
+   </div>
+
+   <script src="../js/config.js"></script>
+   <script src="../js/api.js"></script>
+   <script src="../js/auth.js"></script>
+   <script>
+       const urlParams = new URLSearchParams(window.location.search);
+       const requestId = urlParams.get('id');
+       let questions = [];
+       let currentRequest = null;
+
+       if (!AUTH.requireAuth() || !requestId) {
+           window.location.href = 'user-dashboard.html';
+       }
+
+       async function loadSurvey() {
+           const user = AUTH.getCurrentUser();
+           document.getElementById('userName').textContent = user.fullName || user.user_info || 'User';
+
+           try {
+               // Load request details
+               const requestResponse = await API.get(`/requests/${requestId}`);
+               currentRequest = requestResponse.request;
+               document.getElementById('requestName').textContent = currentRequest.title;
+               document.getElementById('requestDescription').innerHTML = currentRequest.description || '';
+
+               // Load questions
+               const questionsResponse = await API.get(CONFIG.ENDPOINTS.QUESTIONS_BY_REQUEST(requestId));
+               displayQuestions(questionsResponse.documents);
+
+               // Load existing answers
+               const answersResponse = await API.get(CONFIG.ENDPOINTS.USER_ANSWERS(requestId));
+               if (answersResponse.answers) {
+                   answersResponse.answers.forEach(ans => {
+                       const input = document.querySelector(`[data-question-id="${ans.questionId}"]`);
+                       if (input) {
+                           if (input.type === 'radio') {
+                               const radio = document.querySelector(`input[name="q_${ans.questionId}"][value="${ans.userAnswer}"]`);
+                               if (radio) radio.checked = true;
+                           } else {
+                               input.value = ans.userAnswer;
+                           }
+                       }
+                   });
+               }
+
+               updateProgress();
+           } catch (error) {
+               console.error('Error loading survey:', error);
+           }
+       }
+
+       function displayQuestions(documents) {
+           const container = document.getElementById('questionsContainer');
+           
+           documents.forEach(doc => {
+               const docCard = document.createElement('div');
+               docCard.className = 'card';
+               docCard.innerHTML = `
+                   <div>${doc.description || ''}</div>
+                   <p style="color: var(--gray-500); font-size: 0.875rem;">Số hiệu: ${doc.documentNumber || 'N/A'}</p>
+                   ${doc.pdfUrl ? `<a href="http://localhost:3000${doc.pdfUrl}" target="_blank">📄 Xem văn bản</a>` : ''}
+                   <div style="margin-top: 1rem;">
+                       ${doc.questions ? doc.questions.map(q => {
+                           questions.push(q);
+                           return createQuestionHTML(q);
+                       }).join('') : ''}
+                   </div>
+               `;
+               container.appendChild(docCard);
+           });
+       }
+
+       function createQuestionHTML(question) {
+           if (question.type === 'BOOLEAN') {
+               return `
+                   <div style="margin-bottom: 1.5rem;">
+                       <p style="font-weight: 500; margin-bottom: 0.5rem;">${question.content}</p>
+                       <div style="display: flex; gap: 1rem;">
+                           <label>
+                               <input type="radio" name="q_${question.id}" value="YES" 
+                                      data-question-id="${question.id}" onchange="updateProgress()">
+                               Đồng ý
+                           </label>
+                           <label>
+                               <input type="radio" name="q_${question.id}" value="NO" 
+                                      data-question-id="${question.id}" onchange="updateProgress()">
+                               Không đồng ý
+                           </label>
+                       </div>
+                   </div>
+               `;
+           } else {
+               return `
+                   <div style="margin-bottom: 1.5rem;">
+                       <p style="font-weight: 500; margin-bottom: 0.5rem;">${question.content}</p>
+                       <textarea class="form-control" rows="3" 
+                                 data-question-id="${question.id}"
+                                 onchange="updateProgress()"
+                                 placeholder="Nhập câu trả lời của bạn..."></textarea>
+                   </div>
+               `;
+           }
+       }
+
+       function collectAnswers() {
+           const answers = [];
+           questions.forEach(q => {
+               let answer = null;
+               
+               if (q.type === 'BOOLEAN') {
+                   const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                   if (selected) {
+                       answer = selected.value;
+                   }
+               } else {
+                   const textarea = document.querySelector(`[data-question-id="${q.id}"]`);
+                   if (textarea && textarea.value.trim()) {
+                       answer = textarea.value.trim();
+                   }
+               }
+               
+               if (answer) {
+                   answers.push({
+                       questionId: q.id,
+                       userAnswer: answer,
+                       reason: null
+                   });
+               }
+           });
+           return answers;
+       }
+
+       function updateProgress() {
+           const answered = collectAnswers().length;
+           const total = questions.length;
+           const percentage = total > 0 ? Math.round((answered / total) * 100) : 0;
+           
+           document.getElementById('progressText').textContent = `${answered}/${total}`;
+           document.getElementById('progressBar').style.width = `${percentage}%`;
+           document.getElementById('progressBar').textContent = `${percentage}%`;
+       }
+
+       async function submitAnswers() {
+           const answers = collectAnswers();
+           
+           if (answers.length === 0) {
+               alert('Vui lòng trả lời ít nhất một câu hỏi');
+               return;
+           }
+           
+           try {
+               await API.post(CONFIG.ENDPOINTS.SUBMIT_MULTIPLE_ANSWERS, { answers });
+               alert('Gửi khảo sát thành công!');
+               window.location.href = 'user-dashboard.html';
+           } catch (error) {
+               alert('Không thể gửi khảo sát. Vui lòng thử lại!');
+           }
+       }
+
+       loadSurvey();
+   </script>
+</body>
+</html>

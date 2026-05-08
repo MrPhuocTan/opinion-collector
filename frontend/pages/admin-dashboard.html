@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Admin Dashboard - Opinion Collector</title>
+   <link rel="stylesheet" href="../css/style.css">
+   <style>
+       .dashboard-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+           gap: 1rem;
+           margin-bottom: 2rem;
+       }
+       .stat-card {
+           background: white;
+           padding: 1.5rem;
+           border-radius: 0.5rem;
+           box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+           cursor: pointer;
+           transition: transform 0.2s;
+       }
+       .stat-card:hover {
+           transform: translateY(-2px);
+           box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+       }
+       .stat-value {
+           font-size: 2rem;
+           font-weight: bold;
+           color: var(--primary-color);
+       }
+       .stat-label {
+           color: var(--gray-500);
+           font-size: 0.875rem;
+           margin-top: 0.5rem;
+       }
+       .quick-actions {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+           gap: 1rem;
+           margin-top: 2rem;
+       }
+       .action-card {
+           background: white;
+           padding: 1rem;
+           border-radius: 0.5rem;
+           text-align: center;
+           border: 2px solid var(--gray-200);
+           cursor: pointer;
+           transition: all 0.3s;
+           text-decoration: none;
+           color: inherit;
+       }
+       .action-card:hover {
+           border-color: var(--primary-color);
+           background: var(--gray-50);
+       }
+       .action-icon {
+           font-size: 2rem;
+           margin-bottom: 0.5rem;
+       }
+   </style>
+</head>
+<body>
+   <nav class="navbar">
+       <div class="container">
+           <div class="navbar-content">
+               <h1 style="color: var(--primary-color);">Admin Dashboard</h1>
+               <div>
+                   <span id="adminName"></span>
+                   <button class="btn btn-danger" onclick="AUTH.logout()">Đăng xuất</button>
+               </div>
+           </div>
+       </div>
+   </nav>
+   
+   <div class="container">
+       <!-- Statistics Cards -->
+       <div class="dashboard-grid">
+           <div class="stat-card" onclick="window.location.href='admin-users.html'">
+               <div class="stat-value" id="totalUsers">0</div>
+               <div class="stat-label">Tổng người dùng</div>
+           </div>
+           <div class="stat-card" onclick="window.location.href='admin-requests.html'">
+               <div class="stat-value" id="totalRequests">0</div>
+               <div class="stat-label">Tổng khảo sát</div>
+           </div>
+           <div class="stat-card">
+               <div class="stat-value" id="totalDocuments">0</div>
+               <div class="stat-label">Tổng văn kiện</div>
+           </div>
+           <div class="stat-card">
+               <div class="stat-value" id="totalAnswers">0</div>
+               <div class="stat-label">Tổng câu trả lời</div>
+           </div>
+       </div>
+       
+       <!-- Quick Actions -->
+       <h3>Thao tác nhanh</h3>
+       <div class="quick-actions">
+           <a href="admin-requests.html" class="action-card">
+               <div class="action-icon">📋</div>
+               <div>Quản lý Khảo sát</div>
+           </a>
+           <a href="admin-users.html" class="action-card">
+               <div class="action-icon">👥</div>
+               <div>Quản lý Người dùng</div>
+           </a>
+           <a href="#" onclick="createNewRequest()" class="action-card">
+               <div class="action-icon">➕</div>
+               <div>Tạo Khảo sát Mới</div>
+           </a>
+       </div>
+       
+       <!-- Recent Activity -->
+       <div class="card" style="margin-top: 2rem;">
+           <h3>Hoạt động gần đây</h3>
+           <div id="recentActivity">
+               <div class="loading">
+                   <div class="spinner"></div>
+               </div>
+           </div>
+       </div>
+   </div>
+   
+   <script src="../js/config.js"></script>
+   <script src="../js/api.js"></script>
+   <script src="../js/auth.js"></script>
+   <script>
+       if (!AUTH.requireAuth() || !AUTH.isAdmin()) {
+           window.location.href = 'user-dashboard.html';
+       }
+       
+       async function loadDashboard() {
+           const user = AUTH.getCurrentUser();
+           document.getElementById('adminName').textContent = user.fullName || user.user_info || 'Admin';
+           
+           try {
+               const response = await API.get('/dashboard/stats');
+               
+               document.getElementById('totalUsers').textContent = response.stats.totalUsers || 0;
+               document.getElementById('totalRequests').textContent = response.stats.totalRequests || 0;
+               document.getElementById('totalDocuments').textContent = response.stats.totalDocuments || 0;
+               document.getElementById('totalAnswers').textContent = response.stats.totalAnswers || 0;
+               
+               // Display recent activity
+               const activityContainer = document.getElementById('recentActivity');
+               if (response.recentActivity && response.recentActivity.length > 0) {
+                   let html = '<table class="table"><thead><tr><th>Ngày</th><th>Người dùng</th><th>Số câu trả lời</th></tr></thead><tbody>';
+                   
+                   response.recentActivity.forEach(activity => {
+                       html += `
+                           <tr>
+                               <td>${new Date(activity.activityDate).toLocaleDateString('vi-VN')}</td>
+                               <td>${activity.activeUsers || 0}</td>
+                               <td>${activity.answersSubmitted || 0}</td>
+                           </tr>
+                       `;
+                   });
+                   
+                   html += '</tbody></table>';
+                   activityContainer.innerHTML = html;
+               } else {
+                   activityContainer.innerHTML = '<p>Chưa có hoạt động nào</p>';
+               }
+           } catch (error) {
+               console.error('Error loading dashboard:', error);
+           }
+       }
+       
+       function createNewRequest() {
+           window.location.href = 'admin-requests.html';
+       }
+       
+       loadDashboard();
+   </script>
+</body>
+</html>

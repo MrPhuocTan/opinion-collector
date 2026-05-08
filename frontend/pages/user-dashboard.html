@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Dashboard - Opinion Collector</title>
+   <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+   <nav class="navbar">
+       <div class="container">
+           <div class="navbar-content">
+               <h1 style="color: var(--primary-color);">Opinion Collector</h1>
+               <div>
+                   <span id="userName"></span>
+                   <button class="btn btn-danger" onclick="logout()">Đăng xuất</button>
+               </div>
+           </div>
+       </div>
+   </nav>
+   
+   <div class="container">
+       <h2>Danh sách khảo sát</h2>
+       <div id="requestsList"></div>
+   </div>
+   
+   <script src="../js/config.js"></script>
+   <script src="../js/api.js"></script>
+   <script src="../js/auth.js"></script>
+   <script>
+       if (!AUTH.requireAuth()) {
+           // Redirect handled by requireAuth
+       } else {
+           loadDashboard();
+       }
+       
+       async function loadDashboard() {
+           const user = AUTH.getCurrentUser();
+           document.getElementById('userName').textContent = user.fullName || user.user_info || 'User';
+           
+           try {
+               const response = await API.get('/requests');
+               const container = document.getElementById('requestsList');
+               
+               if (response.requests.length === 0) {
+                   container.innerHTML = '<div class="card">Chưa có khảo sát nào</div>';
+               } else {
+                   container.innerHTML = response.requests.map(req => `
+                       <div class="card">
+                           <h3>${req.title}</h3>
+                           <div style="max-height: 100px; overflow-y: auto;">${req.description || 'Không có mô tả'}</div>
+                           <p style="color: var(--gray-500);">Số văn kiện: ${req.documentCount || 0}</p>
+                           <div style="margin-top: 1rem;">
+                               <button class="btn btn-primary" onclick="viewRequest(${req.id})">
+                                   Làm khảo sát
+                               </button>
+                               <button class="btn" style="background: var(--gray-200); margin-left: 0.5rem;" 
+                                       onclick="checkProgress(${req.id})">
+                                   Xem tiến độ
+                               </button>
+                           </div>
+                       </div>
+                   `).join('');
+               }
+           } catch (error) {
+               console.error('Error loading requests:', error);
+           }
+       }
+       
+       function viewRequest(requestId) {
+           window.location.href = `answer-survey.html?id=${requestId}`;
+       }
+       
+       async function checkProgress(requestId) {
+           try {
+               const response = await API.get(`/answers/progress/${requestId}`);
+               const progress = response.progress;
+               alert(`Tiến độ: ${progress.answered}/${progress.total} câu hỏi (${progress.percentage}%)`);
+           } catch (error) {
+               alert('Không thể tải tiến độ');
+           }
+       }
+       
+       function logout() {
+           AUTH.logout();
+       }
+   </script>
+</body>
+</html>

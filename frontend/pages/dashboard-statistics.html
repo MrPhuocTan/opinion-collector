@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Dashboard Thống kê - Opinion Collector</title>
+   <link rel="stylesheet" href="../css/style.css">
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <style>
+       .stats-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+           gap: 1rem;
+           margin-bottom: 2rem;
+       }
+       .stat-card {
+           background: white;
+           padding: 1.5rem;
+           border-radius: 0.5rem;
+           box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+       }
+       .stat-value {
+           font-size: 2rem;
+           font-weight: bold;
+           color: var(--primary-color);
+       }
+       .stat-label {
+           color: var(--gray-500);
+           font-size: 0.875rem;
+           margin-top: 0.5rem;
+       }
+       .chart-container {
+           background: white;
+           padding: 1.5rem;
+           border-radius: 0.5rem;
+           box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+           margin-bottom: 1rem;
+       }
+       .chart-title {
+           font-size: 1.25rem;
+           font-weight: 600;
+           margin-bottom: 1rem;
+       }
+   </style>
+</head>
+<body>
+   <nav class="navbar">
+       <div class="container">
+           <div class="navbar-content">
+               <h1 style="color: var(--primary-color);">Dashboard Thống kê</h1>
+               <div>
+                   <a href="admin-requests.html" class="btn">Khảo sát</a>
+                   <a href="admin-users.html" class="btn">Users</a>
+                   <button class="btn btn-danger" onclick="AUTH.logout()">Đăng xuất</button>
+               </div>
+           </div>
+       </div>
+   </nav>
+   
+   <div class="container">
+       <!-- Overview Stats -->
+       <div class="stats-grid">
+           <div class="stat-card">
+               <div class="stat-value" id="totalUsers">0</div>
+               <div class="stat-label">Tổng người dùng</div>
+           </div>
+           <div class="stat-card">
+               <div class="stat-value" id="totalRequests">0</div>
+               <div class="stat-label">Tổng khảo sát</div>
+           </div>
+           <div class="stat-card">
+               <div class="stat-value" id="totalQuestions">0</div>
+               <div class="stat-label">Tổng câu hỏi</div>
+           </div>
+           <div class="stat-card">
+               <div class="stat-value" id="totalAnswers">0</div>
+               <div class="stat-label">Tổng câu trả lời</div>
+           </div>
+       </div>
+       
+       <!-- Request Selection for Department Statistics -->
+       <div class="card">
+           <div class="form-group">
+               <label class="form-label">Chọn khảo sát để xem thống kê theo phòng ban:</label>
+               <select id="requestSelect" class="form-control" onchange="loadDepartmentStats()">
+                   <option value="">-- Chọn khảo sát --</option>
+               </select>
+           </div>
+       </div>
+       
+       <!-- Charts -->
+       <div class="chart-container">
+           <div class="chart-title">Hoạt động 7 ngày gần nhất</div>
+           <canvas id="activityChart"></canvas>
+       </div>
+       
+       <div class="chart-container" id="departmentChartContainer" style="display: none;">
+           <div class="chart-title">Thống kê theo phòng ban</div>
+           <canvas id="departmentChart"></canvas>
+       </div>
+       
+       <!-- Department Statistics Table -->
+       <div id="departmentStats" class="card" style="display: none;">
+           <h3>Chi tiết thống kê theo phòng ban</h3>
+           <div id="departmentStatsTable"></div>
+       </div>
+   </div>
+   
+   <script src="../js/config.js"></script>
+   <script src="../js/api.js"></script>
+   <script src="../js/auth.js"></script>
+   <script>
+       if (!AUTH.requireAuth() || !AUTH.isAdmin()) {
+           window.location.href = 'login.html';
+       }
+       
+       let activityChart = null;
+       let departmentChart = null;
+       
+       async function loadOverview() {
+           try {
+               const response = await API.get('/statistics/overview');
+               const overview = response.overview;
+               
+               document.getElementById('totalUsers').textContent = overview.totalUsers || 0;
+               document.getElementById('totalRequests').textContent = overview.totalRequests || 0;
+               document.getElementById('totalQuestions').textContent = overview.totalQuestions || 0;
+               document.getElementById('totalAnswers').textContent = overview.totalAnswers || 0;
+               
+               // Draw activity chart
+               const ctx = document.getElementById('activityChart').getContext('2d');
+               if (activityChart) activityChart.destroy();
+               
+               activityChart = new Chart(ctx, {
+                   type: 'line',
+                   data: {
+                       labels: response.recentActivity.map(d => new Date(d.date).toLocaleDateString('vi-VN')),
+                       datasets: [{
+                           label: 'Số câu trả lời',
+                           data: response.recentActivity.map(d => d.answerCount),
+                           borderColor: 'rgb(79, 70, 229)',
+                           backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                           tension: 0.1
+                       }]
+                   },
+                   options: {
+                       responsive: true,
+                       plugins: {
+                           legend: {
+                               display: false
+                           }
+                       },
+                       scales: {
+                           y: {
+                               beginAtZero: true
+                           }
+                       }
+                   }
+               });
+           } catch (error) {
+               console.error('Error loading overview:', error);
+           }
+       }
+       
+       async function loadRequests() {
+           try {
+               const response = await API.get('/requests');
+               const select = document.getElementById('requestSelect');
+               select.innerHTML = '<option value="">-- Chọn khảo sát --</option>';
+               response.requests.forEach(req => {
+                   select.innerHTML += `<option value="${req.id}">${req.title}</option>`;
+               });
+           } catch (error) {
+               console.error('Error loading requests:', error);
+           }
+       }
+       
+       async function loadDepartmentStats() {
+           const requestId = document.getElementById('requestSelect').value;
+           if (!requestId) {
+               document.getElementById('departmentChartContainer').style.display = 'none';
+               document.getElementById('departmentStats').style.display = 'none';
+               return;
+           }
+           
+           try {
+               const response = await API.get(`/statistics/department/${requestId}`);
+               const statistics = response.statistics;
+               
+               if (statistics.length === 0) {
+                   document.getElementById('departmentStats').innerHTML = '<p>Chưa có dữ liệu thống kê</p>';
+                   return;
+               }
+               
+               // Show containers
+               document.getElementById('departmentChartContainer').style.display = 'block';
+               document.getElementById('departmentStats').style.display = 'block';
+               
+               // Prepare chart data
+               const labels = [...new Set(statistics.flatMap(d => d.questions.map(q => q.content)))];
+               const datasets = statistics.map((dept, index) => ({
+                   label: dept.departmentName,
+                   data: dept.questions.map(q => q.yesPercentage),
+                   backgroundColor: `hsl(${index * 60}, 70%, 50%)`,
+               }));
+               
+               // Draw department chart
+               const ctx = document.getElementById('departmentChart').getContext('2d');
+               if (departmentChart) departmentChart.destroy();
+               
+               departmentChart = new Chart(ctx, {
+                   type: 'bar',
+                   data: {
+                       labels: labels.slice(0, 5), // Show first 5 questions
+                       datasets: datasets
+                   },
+                   options: {
+                       responsive: true,
+                       plugins: {
+                           title: {
+                               display: true,
+                               text: 'Tỷ lệ đồng ý theo phòng ban (%)'
+                           }
+                       },
+                       scales: {
+                           y: {
+                               beginAtZero: true,
+                               max: 100
+                           }
+                       }
+                   }
+               });
+               
+               // Display detailed table
+               let tableHTML = '<table class="table"><thead><tr><th>Phòng ban</th><th>Câu hỏi</th><th>Đồng ý</th><th>Không đồng ý</th><th>Tỷ lệ đồng ý</th></tr></thead><tbody>';
+               
+               statistics.forEach(dept => {
+                   dept.questions.forEach(q => {
+                       tableHTML += `
+                           <tr>
+                               <td>${dept.departmentName}</td>
+                               <td>${q.content}</td>
+                               <td>${q.yesCount}</td>
+                               <td>${q.noCount}</td>
+                               <td>${q.yesPercentage}%</td>
+                           </tr>
+                       `;
+                   });
+               });
+               
+               tableHTML += '</tbody></table>';
+               document.getElementById('departmentStatsTable').innerHTML = tableHTML;
+               
+           } catch (error) {
+               console.error('Error loading department stats:', error);
+               alert('Không thể tải thống kê phòng ban');
+           }
+       }
+       
+       // Load initial data
+       loadOverview();
+       loadRequests();
+   </script>
+</body>
+</html>

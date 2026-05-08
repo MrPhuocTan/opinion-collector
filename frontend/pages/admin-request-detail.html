@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết khảo sát - Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        .tabs { display: flex; gap: 1rem; border-bottom: 2px solid var(--gray-200); margin-bottom: 1rem; }
+        .tab { padding: 0.5rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s; }
+        .tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .document-card { background: white; border: 1px solid var(--gray-200); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
+        .question-item { background: var(--gray-50); padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 0.5rem; width: 80%; max-width: 700px; max-height: 80vh; overflow-y: auto; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #000; }
+        .upload-area { border: 2px dashed var(--gray-300); border-radius: 0.5rem; padding: 2rem; text-align: center; background: var(--gray-50); cursor: pointer; transition: all 0.3s; }
+        .upload-area:hover, .upload-area.dragover { border-color: var(--primary-color); background: rgba(79, 70, 229, 0.05); }
+        .question-form { background: var(--gray-50); padding: 1rem; border-radius: 0.375rem; margin-bottom: 0.5rem; }
+        .editor-container { height: 150px; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div><a href="admin-requests.html" style="text-decoration: none; color: inherit;">← Quay lại danh sách</a></div>
+                <div><button class="btn btn-danger" onclick="AUTH.logout()">Đăng xuất</button></div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <h1 id="requestName">Loading...</h1>
+            <div id="requestDescription" style="margin-bottom: 1rem;"></div>
+            <p style="color: var(--gray-500); font-size: 0.875rem;">
+                Ngày tạo: <span id="requestDate"></span> | Người tạo: <span id="requestCreator"></span>
+            </p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('documents')">Văn kiện & Câu hỏi</div>
+            <div class="tab" onclick="switchTab('statistics')">Thống kê</div>
+            <div class="tab" onclick="switchTab('users')">Phân công</div>
+        </div>
+        
+        <div id="documentsTab" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>Danh sách văn kiện</h3>
+                <button class="btn btn-primary" onclick="openUploadModal()">+ Upload PDF</button>
+            </div>
+            <div id="documentsList"></div>
+        </div>
+        
+        <div id="statisticsTab" class="tab-content">
+            <div id="statisticsContent"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+        
+        <div id="usersTab" class="tab-content">
+            <h3>Phân công người dùng</h3>
+            <div id="assignmentContent"><p>Tính năng đang phát triển...</p></div>
+        </div>
+    </div>
+    
+    <!-- Document Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUploadModal()">&times;</span>
+            <h2 id="docModalTitle">Upload Văn kiện PDF</h2>
+            <form id="uploadForm">
+                <input type="hidden" id="documentId">
+                <div class="form-group">
+                    <label class="form-label">Mô tả văn bản (Có Format) *</label>
+                    <div id="docEditor" class="editor-container"></div>
+                </div>
+                <div class="form-group" style="margin-top: 3rem;">
+                    <label class="form-label">Số hiệu văn bản</label>
+                    <input type="text" id="doc_num" class="form-control">
+                </div>
+                <div class="form-group" id="pdfUploadGroup">
+                    <label class="form-label">File PDF *</label>
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('pdfFile').click()">
+                        <p>Click để chọn file hoặc kéo thả file vào đây</p>
+                        <p style="color: var(--gray-500); font-size: 0.875rem;">Chỉ chấp nhận file PDF (Max: 10MB)</p>
+                        <input type="file" id="pdfFile" accept=".pdf" style="display: none;" onchange="handleFileSelect(event)">
+                    </div>
+                    <p id="selectedFileName" style="margin-top: 0.5rem; color: var(--primary-color);"></p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                    <button type="button" class="btn" onclick="closeUploadModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Questions Modal -->
+    <div id="questionsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeQuestionsModal()">&times;</span>
+            <h2>Quản lý câu hỏi</h2>
+            <div id="documentInfo" style="color: var(--gray-500); margin-bottom: 1rem;"></div>
+            
+            <div style="margin-bottom: 1rem;">
+                <h4>Thêm / Sửa câu hỏi</h4>
+                <div id="newQuestions">
+                    <div class="question-form">
+                        <input type="hidden" name="que_id">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Nội dung câu hỏi" name="que_des">
+                        </div>
+                        <div class="form-group">
+                            <select class="form-control" name="que_type">
+                                <option value="BOOLEAN">Yes/No</option>
+                                <option value="TEXT">Văn bản</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-sm" onclick="addQuestionForm()">+ Thêm câu hỏi</button>
+                <button class="btn btn-primary btn-sm" onclick="saveQuestions()">Lưu câu hỏi</button>
+            </div>
+            
+            <h4>Câu hỏi hiện tại</h4>
+            <div id="existingQuestions"></div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        if (!AUTH.requireAuth() || !AUTH.isAdmin()) window.location.href = 'login.html';
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestId = urlParams.get('id');
+        let currentDocumentId = null;
+        let selectedFile = null;
+        
+        if (!requestId) window.location.href = 'admin-requests.html';
+
+        var docQuill = new Quill('#docEditor', {
+            theme: 'snow',
+            modules: { toolbar: [ ['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['clean'] ] }
+        });
+        
+        async function loadRequestDetail() {
+            try {
+                const response = await API.get(`/requests/${requestId}`);
+                const request = response.request;
+                document.getElementById('requestName').textContent = request.title;
+                document.getElementById('requestDescription').innerHTML = request.description || 'Không có mô tả';
+                document.getElementById('requestDate').textContent = new Date(request.createdAt).toLocaleDateString('vi-VN');
+                document.getElementById('requestCreator').textContent = request.creatorName || 'N/A';
+                loadDocuments();
+            } catch (error) {
+                alert('Không thể tải thông tin khảo sát');
+            }
+        }
+        
+        async function loadDocuments() {
+            try {
+                const response = await API.get(`/documents/request/${requestId}`);
+                const container = document.getElementById('documentsList');
+                if (response.documents.length === 0) {
+                    container.innerHTML = '<p>Chưa có văn kiện nào. Click "Upload PDF" để thêm.</p>';
+                } else {
+                    container.innerHTML = response.documents.map(doc => `
+                        <div class="document-card">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4>${doc.description}</h4>
+                                    <p style="color: var(--gray-500); font-size: 0.875rem;">
+                                        Số hiệu: ${doc.documentNumber || 'N/A'} | Số câu hỏi: ${doc.questions?.length || 0}
+                                    </p>
+                                    ${doc.pdfUrl ? `<a href="http://localhost:3000${doc.pdfUrl}" target="_blank" class="btn btn-sm" style="margin-top: 0.5rem;">📄 Xem PDF</a>` : ''}
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-sm" onclick="manageQuestions(${doc.id}, '${encodeURIComponent(doc.description)}')">Câu hỏi</button>
+                                    <button class="btn btn-sm" onclick="editDocument(${doc.id})">Sửa</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteDocument(${doc.id})">Xóa</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) { console.error(error); }
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${tab}Tab`).classList.add('active');
+            if (tab === 'statistics') loadStatistics();
+        }
+        
+        async function loadStatistics() {
+            try {
+                const response = await API.get(`/statistics/department/${requestId}`);
+                const container = document.getElementById('statisticsContent');
+                if (response.statistics.length === 0) {
+                    container.innerHTML = '<p>Chưa có dữ liệu thống kê</p>';
+                } else {
+                    let html = '<table class="table"><thead><tr><th>Phòng ban</th><th>Câu hỏi</th><th>Đồng ý</th><th>Không đồng ý</th><th>Tổng</th><th>Tỷ lệ đồng ý</th></tr></thead><tbody>';
+                    response.statistics.forEach(dept => {
+                        dept.questions.forEach(stat => {
+                            html += `
+                                <tr>
+                                    <td>${dept.departmentName}</td>
+                                    <td>${stat.content}</td>
+                                    <td>${stat.yesCount}</td>
+                                    <td>${stat.noCount}</td>
+                                    <td>${stat.totalAnswers}</td>
+                                    <td><div class="progress" style="width: 100px;"><div class="progress-bar" style="width: ${stat.yesPercentage}%">${stat.yesPercentage}%</div></div></td>
+                                </tr>
+                            `;
+                        });
+                    });
+                    container.innerHTML = html + '</tbody></table>';
+                }
+            } catch (error) { console.error(error); }
+        }
+        
+        function openUploadModal() {
+            document.getElementById('docModalTitle').textContent = 'Upload Văn kiện PDF';
+            document.getElementById('uploadModal').style.display = 'block';
+            document.getElementById('uploadForm').reset();
+            document.getElementById('documentId').value = '';
+            docQuill.root.innerHTML = '';
+            document.getElementById('pdfUploadGroup').style.display = 'block';
+            selectedFile = null;
+            document.getElementById('selectedFileName').textContent = '';
+        }
+
+        async function editDocument(id) {
+            try {
+                const response = await API.get(`/documents/${id}`);
+                const doc = response.document;
+                document.getElementById('docModalTitle').textContent = 'Sửa Văn kiện';
+                document.getElementById('documentId').value = doc.id;
+                docQuill.root.innerHTML = doc.description || '';
+                document.getElementById('doc_num').value = doc.documentNumber || '';
+                document.getElementById('pdfUploadGroup').style.display = 'none'; // Cannot update file right now
+                document.getElementById('uploadModal').style.display = 'block';
+            } catch (e) {
+                alert('Lỗi tải văn kiện');
+            }
+        }
+        
+        function closeUploadModal() { document.getElementById('uploadModal').style.display = 'none'; }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.type !== 'application/pdf') return alert('Chỉ chấp nhận file PDF!');
+                if (file.size > 10 * 1024 * 1024) return alert('File không được vượt quá 10MB!');
+                selectedFile = file;
+                document.getElementById('selectedFileName').textContent = `Đã chọn: ${file.name}`;
+            }
+        }
+        
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault(); uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') { selectedFile = file; document.getElementById('selectedFileName').textContent = `Đã chọn: ${file.name}`; }
+            else alert('Chỉ chấp nhận file PDF!');
+        });
+        
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('documentId').value;
+            const description = docQuill.root.innerHTML;
+            const documentNumber = document.getElementById('doc_num').value;
+
+            try {
+                if (id) {
+                    await API.put(`/documents/${id}`, { description, documentNumber });
+                    alert('Cập nhật thành công!');
+                } else {
+                    if (!selectedFile) return alert('Vui lòng chọn file PDF!');
+                    const formData = new FormData();
+                    formData.append('requestId', requestId);
+                    formData.append('description', description);
+                    formData.append('documentNumber', documentNumber);
+                    formData.append('pdf', selectedFile);
+                    const res = await API.upload('/documents/upload', formData);
+                    if (res.success) alert('Upload thành công!');
+                }
+                closeUploadModal();
+                loadDocuments();
+            } catch (error) { alert('Có lỗi xảy ra!'); }
+        });
+        
+        async function deleteDocument(docId) {
+            if (confirm('Bạn có chắc muốn xóa văn kiện này?')) {
+                try { await API.delete(`/documents/${docId}`); alert('Xóa thành công!'); loadDocuments(); }
+                catch (error) { alert('Không thể xóa văn kiện!'); }
+            }
+        }
+        
+        async function manageQuestions(docId, docDesEncoded) {
+            currentDocumentId = docId;
+            document.getElementById('documentInfo').innerHTML = `Văn kiện: ${decodeURIComponent(docDesEncoded)}`;
+            document.getElementById('questionsModal').style.display = 'block';
+            document.getElementById('newQuestions').innerHTML = `
+                <div class="question-form">
+                    <input type="hidden" name="que_id">
+                    <div class="form-group"><input type="text" class="form-control" placeholder="Nội dung câu hỏi" name="que_des"></div>
+                    <div class="form-group"><select class="form-control" name="que_type"><option value="BOOLEAN">Yes/No</option><option value="TEXT">Văn bản</option></select></div>
+                </div>`;
+            try {
+                const response = await API.get(`/questions/document/${docId}`);
+                const container = document.getElementById('existingQuestions');
+                if (response.questions.length === 0) container.innerHTML = '<p>Chưa có câu hỏi nào</p>';
+                else {
+                    container.innerHTML = response.questions.map(q => `
+                        <div class="question-item">
+                            <div><strong>${q.content}</strong> <span style="color: var(--gray-500); font-size: 0.875rem;">(${q.type === 'BOOLEAN' ? 'Yes/No' : 'Văn bản'})</span></div>
+                            <div>
+                                <button class="btn btn-sm" onclick="editQuestion(${q.id}, '${encodeURIComponent(q.content)}', '${q.type}')">Sửa</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${q.id})">Xóa</button>
+                            </div>
+                        </div>`).join('');
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function editQuestion(id, content, type) {
+            document.getElementById('newQuestions').innerHTML = `
+                <div class="question-form">
+                    <input type="hidden" name="que_id" value="${id}">
+                    <div class="form-group"><input type="text" class="form-control" placeholder="Nội dung câu hỏi" name="que_des" value="${decodeURIComponent(content)}"></div>
+                    <div class="form-group">
+                        <select class="form-control" name="que_type">
+                            <option value="BOOLEAN" ${type === 'BOOLEAN' ? 'selected' : ''}>Yes/No</option>
+                            <option value="TEXT" ${type === 'TEXT' ? 'selected' : ''}>Văn bản</option>
+                        </select>
+                    </div>
+                </div>`;
+        }
+        
+        function closeQuestionsModal() { document.getElementById('questionsModal').style.display = 'none'; }
+        
+        function addQuestionForm() {
+            const container = document.getElementById('newQuestions');
+            const newForm = document.createElement('div');
+            newForm.className = 'question-form';
+            newForm.innerHTML = `<input type="hidden" name="que_id"><div class="form-group"><input type="text" class="form-control" placeholder="Nội dung câu hỏi" name="que_des"></div><div class="form-group"><select class="form-control" name="que_type"><option value="BOOLEAN">Yes/No</option><option value="TEXT">Văn bản</option></select></div>`;
+            container.appendChild(newForm);
+        }
+        
+        async function saveQuestions() {
+            const forms = document.querySelectorAll('#newQuestions .question-form');
+            const newQuestions = [];
+            
+            for (const form of forms) {
+                const id = form.querySelector('[name="que_id"]').value;
+                const content = form.querySelector('[name="que_des"]').value.trim();
+                const type = form.querySelector('[name="que_type"]').value;
+                
+                if (content) {
+                    if (id) {
+                        try { await API.put(`/questions/${id}`, { content, type }); } catch(e){}
+                    } else {
+                        newQuestions.push({ content, type });
+                    }
+                }
+            }
+            
+            if (newQuestions.length > 0) {
+                try { await API.post('/questions/multiple', { documentId: currentDocumentId, questions: newQuestions }); }
+                catch(e){}
+            }
+            alert('Đã lưu!');
+            manageQuestions(currentDocumentId, encodeURIComponent(document.getElementById('documentInfo').textContent.replace('Văn kiện: ', '')));
+        }
+        
+        async function deleteQuestion(queId) {
+            if (confirm('Bạn có chắc muốn xóa câu hỏi này?')) {
+                try { await API.delete(`/questions/${queId}`); alert('Xóa thành công!'); manageQuestions(currentDocumentId, encodeURIComponent(document.getElementById('documentInfo').textContent.replace('Văn kiện: ', ''))); }
+                catch (error) { alert('Không thể xóa câu hỏi!'); }
+            }
+        }
+        
+        loadRequestDetail();
+    </script>
+</body>
+</html>
