@@ -1,4 +1,5 @@
 const DepartmentModel = require('../models/department.model');
+const Mapper = require('../utils/mapper');
 
 class DepartmentController {
     static async getAll(req, res) {
