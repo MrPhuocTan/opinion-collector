@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - Opinion Collector</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #4F46E5;
+            --primary-dark: #4338CA;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-500: #6B7280;
+            --gray-700: #374151;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        
+        .register-container {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            margin: 1rem;
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .register-header h1 {
+            color: var(--primary-color);
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .register-header p {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .form-label .required {
+            color: red;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-control.is-invalid {
+            border-color: #EF4444;
+        }
+
+        .form-error {
+            color: #EF4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .alert-danger {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FCA5A5;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-small {
+            font-size: 0.875rem;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1>Đăng ký tài khoản</h1>
+            <p>Tham gia hệ thống khảo sát ý kiến</p>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <form id="registerForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        Tên đăng nhập <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        class="form-control" 
+                        placeholder="Nhập tên đăng nhập"
+                        required
+                        minlength="3"
+                        maxlength="20"
+                        pattern="[a-zA-Z0-9_]+"
+                    >
+                    <div class="form-error" id="username-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Họ và tên <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="fullName" 
+                        class="form-control" 
+                        placeholder="Nhập họ và tên"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        Mật khẩu <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="form-control" 
+                        placeholder="Tối thiểu 6 ký tự"
+                        required
+                        minlength="6"
+                    >
+                    <div class="form-error" id="password-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Xác nhận mật khẩu <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="confirmPassword" 
+                        class="form-control" 
+                        placeholder="Nhập lại mật khẩu"
+                        required
+                    >
+                    <div class="form-error" id="confirm-error"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        Số điện thoại <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        class="form-control" 
+                        placeholder="0901234567"
+                        required
+                        pattern="(0|\+84)[3-9][0-9]{8}"
+                    >
+                    <div class="form-error" id="phone-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        CCCD/CMND
+                    </label>
+                    <input 
+                        type="text" 
+                        id="cccd" 
+                        class="form-control" 
+                        placeholder="12 số"
+                        maxlength="12"
+                        pattern="[0-9]{12}"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label class="form-label">
+                    Phòng ban
+                </label>
+                <select id="departId" class="form-control">
+                    <option value="">-- Chọn phòng ban --</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="registerBtn">
+                <i class="fas fa-user-plus"></i> Đăng ký
+            </button>
+        </form>
+        
+        <div class="text-center" style="margin-top: 1.5rem;">
+            <a href="login.html" class="text-small">
+                Đã có tài khoản? Đăng nhập ngay
+            </a>
+        </div>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script>
+        const API_URL = CONFIG.API_URL;
+        
+        // Load departments
+        async function loadDepartments() {
+            try {
+                const response = await fetch(`${API_URL}/departments`);
+                const data = await response.json();
+                
+                const select = document.getElementById('departId');
+                data.departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.departmentId;
+                    option.textContent = dept.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+        
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+        
+        // Validate form
+        function validateForm() {
+            let isValid = true;
+            
+            // Check username
+            const username = document.getElementById('username').value;
+            if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+                document.getElementById('username-error').textContent = 
+                    'Tên đăng nhập phải 3-20 ký tự, chỉ chứa chữ, số và _';
+                isValid = false;
+            } else {
+                document.getElementById('username-error').textContent = '';
+            }
+            
+            // Check password
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password.length < 6) {
+                document.getElementById('password-error').textContent = 
+                    'Mật khẩu phải có ít nhất 6 ký tự';
+                isValid = false;
+            } else {
+                document.getElementById('password-error').textContent = '';
+            }
+            
+            if (password !== confirmPassword) {
+                document.getElementById('confirm-error').textContent = 
+                    'Mật khẩu không khớp';
+                isValid = false;
+            } else {
+                document.getElementById('confirm-error').textContent = '';
+            }
+            
+            // Check phone
+            const phone = document.getElementById('phone').value;
+            if (!/^(0|\+84)[3-9][0-9]{8}$/.test(phone)) {
+                document.getElementById('phone-error').textContent = 
+                    'Số điện thoại không hợp lệ';
+                isValid = false;
+            } else {
+                document.getElementById('phone-error').textContent = '';
+            }
+            
+            return isValid;
+        }
+        
+        // Handle register form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                fullName: document.getElementById('fullName').value,
+                phone: document.getElementById('phone').value,
+                cccd: document.getElementById('cccd').value || null,
+                departId: document.getElementById('departId').value || null
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Đăng ký thành công! Đang chuyển hướng...', 'success');
+                    
+                    // Store token and user
+                    localStorage.setItem('ocs_token', data.token);
+                    localStorage.setItem('ocs_user', JSON.stringify(data.user));
+                    
+                    setTimeout(() => {
+                        window.location.href = 'user-dashboard.html';
+                    }, 2000);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-user-plus"></i> Đăng ký';
+                    showAlert(data.error || 'Đăng ký thất bại', 'danger');
+                }
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-user-plus"></i> Đăng ký';
+                showAlert('Không thể kết nối đến server', 'danger');
+                console.error('Register error:', error);
+            }
+        });
+        
+        // Load departments on page load
+        loadDepartments();
+    </script>
+</body>
+</html>

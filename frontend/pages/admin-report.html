@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo khảo sát - Admin</title>
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #B22222;
+            --secondary-gold: #FFD700;
+            --neutral-white: #FFFFFF;
+            --neutral-gray-bg: #F5F7FA;
+            --neutral-gray-border: #E0E0E0;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: var(--neutral-gray-bg);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--neutral-white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .report-section {
+            background: var(--neutral-white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .document-title {
+            color: var(--primary-red);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+        }
+
+        .question-title {
+            font-weight: bold;
+            margin: 15px 0 10px 20px;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th, td {
+            border: 1px solid var(--neutral-gray-border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #A01C1C;
+        }
+
+        .btn-excel {
+            background: #28a745;
+        }
+
+        .btn-excel:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Báo cáo khảo sát</h1>
+            <div style="margin-top: 20px;">
+                <label>Chọn khảo sát:</label>
+                <select id="requestSelect" onchange="loadReport()" style="padding: 8px; margin: 0 10px;">
+                    <option value="">-- Chọn khảo sát --</option>
+                </select>
+                <button class="btn btn-excel" onclick="exportExcel()" id="exportBtn" disabled>
+                    <i class="fas fa-file-excel"></i> Xuất Excel
+                </button>
+                <a href="/pages/admin-dashboard.html" class="btn" style="margin-left: 10px;">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+
+        <div id="reportContent"></div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        let currentRequestId = null;
+
+        // Check admin auth
+        if (!AUTH.requireAdmin()) {
+            window.location.href = '/pages/login.html';
+        }
+
+        // Load requests list
+        async function loadRequests() {
+            try {
+                const response = await API.get(CONFIG.ENDPOINTS.REQUESTS);
+                const select = document.getElementById('requestSelect');
+                
+                response.requests.forEach(req => {
+                    const option = document.createElement('option');
+                    option.value = req.reqId;
+                    option.textContent = req.reqName;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading requests:', error);
+            }
+        }
+
+        // Load report
+        async function loadReport() {
+            const requestId = document.getElementById('requestSelect').value;
+            if (!requestId) {
+                document.getElementById('reportContent').innerHTML = '';
+                document.getElementById('exportBtn').disabled = true;
+                return;
+            }
+
+            currentRequestId = requestId;
+            document.getElementById('exportBtn').disabled = false;
+
+            try {
+                const report = await API.get(`/reports/${requestId}`);
+                //const report = await API.get(`${requestId}`);
+                displayReport(report);
+            } catch (error) {
+                console.error('Error loading report:', error);
+                alert('Không thể tải báo cáo');
+            }
+        }
+
+        // Display report
+        function displayReport(report) {
+            const groups = (report.request.audience_groups || []).map(group => group.groupName);
+            let html = `
+                <div class="report-section">
+                    <h2 style="text-align: center; color: var(--primary-red);">
+                        VĂN PHÒNG THÀNH ỦY THÀNH PHỐ HỒ CHÍ MINH - HỆ THỐNG THU THẬP Ý KIẾN
+                    </h2>
+                    <h3 style="text-align: center;">CHỦ ĐỀ: ${escapeHtml(report.request.reqName)}</h3>
+                    <div style="text-align: center; color: var(--text-light);">${renderRichText(report.request.reqDes || '')}</div>
+                    <p style="text-align: center; color: var(--text-light);">Đối tượng lấy ý kiến: ${groups.length ? groups.map(escapeHtml).join(', ') : 'Toàn bộ đơn vị'}</p>
+            `;
+
+            report.documents.forEach((doc, docIndex) => {
+                html += `
+                    <div class="document-title">
+                        ${docIndex + 1}. ${escapeHtml(doc.docNum || '')} - ${escapeHtml(doc.doc_des_text || stripHtml(doc.docDes || ''))}
+                    </div>
+                `;
+
+                doc.questions.forEach((question, qIndex) => {
+                    html += `
+                        <div class="question-title">
+                        <label style="white-space: pre-wrap;">${escapeHtml(question.que_des_text || stripHtml(question.queDes || ''))} </label>
+                        </div>
+                    `;
+
+                    if (question.queType === 'BOOLEAN' && question.report) {
+                        html += displayBooleanReport(question.report);
+                    } else if (question.queType === 'TEXT' && question.report) {
+                        html += displayTextReport(question.report);
+                    } else if (question.queType === 'NUMBER' && question.report) {
+                        html += displayNumberReport(question.report);
+                    }
+                });
+            });
+
+            html += '</div>';
+            document.getElementById('reportContent').innerHTML = html;
+        }
+
+        function displayBooleanReport(report) {
+            let html = '<div style="margin-left: 40px;">';
+            
+            html += `
+                <div class="stats">
+                    <strong>Số đối tượng đã gửi ý kiến: ${report.participatedCount}/${report.totalTargets}</strong>
+                </div>
+            `;
+            html += `
+                <div class="stats">
+                    <strong>Tổng số lượng thống nhất: ${report.agreeTotal}</strong>
+                </div>
+            `;
+
+            if (report.agreeUsers && report.agreeUsers.length > 0) {
+                html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Đơn vị</th>
+                                <th>Người gửi</th>
+                                <th>Số lượng thống nhất</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${report.agreeUsers.map((user, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td>${escapeHtml(user.name || '')}</td>
+                                    <td>${escapeHtml(user.userInfo || user.username || '')}</td>
+                                    <td>${escapeHtml(user.primary_answer || '0')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            if (report.opinions && report.opinions.length > 0) {
+                html += `
+                    <div class="stats">
+                        <strong>Ý kiến khác, ý kiến bổ sung:</strong>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Đơn vị</th>
+                                <th>Người gửi</th>
+                                <th>Góp ý bổ sung</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                report.opinions.forEach((opinion, idx) => {
+                    html += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${escapeHtml(opinion.name || '')}</td>
+                            <td>${escapeHtml(opinion.userInfo || '')}</td>
+                            <td>${escapeHtml(opinion.opinion_text || '')}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+            }
+
+            if (report.notAnsweredCount > 0) {
+                html += `
+                    <div class="stats">
+                        <strong>Số đối tượng chưa gửi ý kiến: ${report.notAnsweredCount}</strong>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function displayTextReport(report) {
+            let html = '<div style="margin-left: 40px;">';
+            
+            html += `
+                <div class="stats">
+                    <strong>Số lượng tham gia: ${report.participatedCount}/${report.totalTargets}</strong>
+                </div>
+            `;
+            
+            if (report.answeredUsers.length > 0) {
+                html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Đơn vị</th>
+                                <th>Họ và tên</th>
+                                <th>Nội dung ý kiến</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                report.answeredUsers.forEach((user, idx) => {
+                    const answersText = user.answers ? user.answers.join('; ') : user.ans_user;
+                    html += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${escapeHtml(user.name || '')}</td>
+                            <td>${escapeHtml(user.userInfo || '')}</td>
+                            <td>${escapeHtml(answersText || '')}</td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+            }
+
+            if (report.notAnsweredCount > 0) {
+                html += `
+                    <div class="stats">
+                        <strong>Số đối tượng chưa tham gia: ${report.notAnsweredCount}</strong>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function displayNumberReport(report) {
+            let html = '<div style="margin-left: 40px;">';
+            
+            html += `
+                <div class="stats">
+                    <strong>Số lượng tham gia: ${report.participatedCount}/${report.totalTargets}</strong>
+                </div>
+                <div class="stats">
+                    <strong>Tổng: ${report.total}</strong>
+                </div>
+            `;
+            
+            if (report.users.length > 0) {
+                html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Đơn vị</th>
+                                <th>Họ và tên</th>
+                                <th>Giá trị</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                report.users.forEach((user, idx) => {
+                    html += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${escapeHtml(user.name || '')}</td>
+                            <td>${escapeHtml(user.userInfo || '')}</td>
+                            <td>${escapeHtml(user.ans_user || '')}</td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+            }
+
+            if (report.notAnsweredCount > 0) {
+                html += `
+                    <div class="stats">
+                        <strong>Số đối tượng chưa tham gia: ${report.notAnsweredCount}</strong>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // Export to Excel
+        async function exportExcel() {
+            if (!currentRequestId) return;
+            
+            window.location.href = `${CONFIG.API_URL}/reports/${currentRequestId}/excel?token=${API.getToken()}`;
+            //window.location.href = `${CONFIG.API_URL}${currentRequestId}/excel?token=${API.getToken()}`;
+        }
+
+        // Initialize
+        loadRequests();
+    </script>
+</body>
+</html>

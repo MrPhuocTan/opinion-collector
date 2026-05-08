@@ -1,212 +1,680 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Làm khảo sát - Opinion Collector</title>
-   <link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm khảo sát - Opinion Collector</title>
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        
+        :root {
+            --primary-red: #B22222;
+            --secondary-gold: #FFD700;
+            --neutral-white: #FFFFFF;
+            --neutral-gray-bg: #F5F7FA;
+            --neutral-gray-border: #E0E0E0;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --info-blue: #3498DB;
+            --warning-orange: #F39C12;
+            --success-green: #2ECC71;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --container-padding: 2.5rem;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: var(--neutral-gray-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 var(--container-padding);
+        }
+        .navbar {
+            background: var(--neutral-white);
+            border-bottom: 1px solid var(--neutral-gray-border);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .navbar-brand .logo-dang {
+            width: 40px;
+            height: 27px;
+            fill: var(--primary-red);
+        }
+        .navbar-back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--primary-red);
+            font-weight: 600;
+            font-size: 1rem;
+            transition: color 0.2s;
+        }
+        .navbar-back-btn:hover {
+            color: #A01C1C;
+        }
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: "Times New Roman", Times, serif;
+        }
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+        }
+        .btn-primary:hover {
+            background-color: #A01C1C;
+        }
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-red);
+            border-color: var(--primary-red);
+        }
+        .btn-outline:hover {
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+        }
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+        .btn-danger {
+            background: #DC2626;
+            color: white;
+            border-color: #DC2626;
+        }
+        .btn-danger:hover {
+            background: #B91C1C;
+        }
+        .card {
+            background: var(--neutral-white);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--neutral-gray-border);
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .card-header {
+            padding: 1.5rem 2rem;
+            background-color: #F8F9FB;
+            border-bottom: 1px solid var(--neutral-gray-border);
+            border-top-left-radius: var(--border-radius-md);
+            border-top-right-radius: var(--border-radius-md);
+        }
+        .card-title {
+            color: var(--primary-red);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+        .progress {
+            height: 28px;
+            background-color: var(--neutral-gray-border);
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: width 0.3s ease;
+        }
+        .question-item {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--neutral-gray-border);
+        }
+        .question-item:last-child {
+            border-bottom: none;
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+        .question-counter {
+            color: var(--primary-red);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .radio-group {
+            display: flex;
+            gap: 2rem;
+            margin: 0.5rem 0 1rem 0;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .radio-label input[type="radio"] {
+            cursor: pointer;
+        }
+        .answer-field-group {
+            margin-bottom: 0.75rem;
+        }
+        .answer-number {
+            min-width: 24px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        .answer-input {
+            flex: 1;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: var(--border-radius-sm);
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px rgba(178, 34, 34, 0.1);
+        }
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .d-flex {
+            display: flex;
+        }
+        .align-center {
+            align-items: center;
+        }
+        .gap-2 {
+            gap: 0.5rem;
+        }
+        .ml-4 {
+            margin-left: 2rem;
+        }
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+        .submit-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: var(--neutral-white);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--card-shadow);
+        }
+        input:disabled, textarea:disabled, button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+        }
+        .alert-warning {
+            background-color: #FEF3C7;
+            color: #92400E;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #F59E0B;
+        }
+        .text-small {
+            font-size: 0.875rem;
+        }
+        .text-muted {
+            color: var(--text-light);
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .justify-between {
+            justify-content: space-between;
+        }
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+        .mb-0 {
+            margin-bottom: 0;
+        }
+        .text-danger {
+            color: #DC2626;
+        }
+        .opinion-count-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .opinion-count-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .opinion-count-control label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        .opinion-count-control input {
+            width: 60px;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: 4px;
+            text-align: center;
+                }
+                .opinion-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .opinion-number {
+            min-width: 24px;
+            color: #7F8C8D;
+            padding-top: 0.75rem;
+        }
+
+        .opinion-text {
+            flex: 1;
+        }
+
+        .opinion-count-box {
+            background: #f8f9fa;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
-   <nav class="navbar">
-       <div class="container">
-           <div class="navbar-content">
-               <div>
-                   <a href="user-dashboard.html" style="text-decoration: none; color: inherit;">
-                       ← Quay lại
-                   </a>
-               </div>
-               <div>
-                   <span id="userName">User</span>
-                   <button class="btn btn-danger" onclick="AUTH.logout()">Đăng xuất</button>
-               </div>
-           </div>
-       </div>
-   </nav>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <svg class="logo-dang" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 238.125 158.75" version="1.1" id="svg19731">
+                        <defs id="defs19725" />
+                        <g id="layer1" transform="translate(242.66,-104.97)">
+                            <rect style="fill:#da251d;fill-opacity:1;" width="238.125" height="158.75" x="-242.66" y="104.97" />
+                            <g id="g19710-9" transform="matrix(1.051,0,0,1.051,6601.25,-1637.35)" style="fill:var(--secondary-gold);fill-opacity:1;">
+                                <path id="path19657-0-4" d="m -6436.471547371615,1742.926950096642 c 6.38779271804,7.230641357446 14.963163305737,12.502793149194 24.298667889062,14.938860558647 6.056211101325,1.5803471957 12.472708435771,1.978650572228 18.596462444365,0.684499497231 6.123754008594,-1.294151074997 11.937748010956,-4.335579482059 16.158102214692,-8.957678632632 4.574893298958,-5.010387614465 7.112965317221,-11.701447693132 7.640977625143,-18.465679781602 0.528012307931,-6.76423208847 -0.871424851367,-13.593465851735 -3.428046439768,-19.878155088105 -4.560331599745,-11.210210791164 -12.883741385267,-20.851111282196 -23.308680635365,-26.998150562502 8.512796781266,0.709574410866 16.805946699762,3.8827694509 23.618107102883,9.036959544979 6.812160403116,5.154190094079 12.120611342006,12.272184963572 15.117966521428,20.271376598489 2.997355179421,7.999191634919 3.673617806543,16.852901094338 1.925932041966,25.214527691603 -1.747685764577,8.361626597266 -5.913491031185,16.203282596691 -11.863819649182,22.332295096395 -8.683007967653,8.943752149713 -21.180068232394,14.055514292711 -33.64194922505,13.760807647735 -12.461880992656,-0.294706644979 -24.703333498127,-5.991501184333 -32.953855939355,-15.335708444904 l -14.556480332948,14.556690177998 -9.381909223252,-9.381909223192 z"/>
+                                <path id="path19683-5-7" d="m -6392.699744590418,1702.503831581282 -10.959354263905,10.959354263781 49.262553323164,49.262553323191 -11.130862671953,11.240941835746 -49.317592904992,-49.317592905071 -8.654444010462,8.654444010525 -12.790755991701,-12.790755991717 21.572665110517,-21.572665110577 c 2.680889538451,0.275819129839 5.402702461607,0.150469066643 8.046892630834,-0.370590679184 2.581477478967,-0.508701686704 5.088366413035,-1.394314604689 7.416535436053,-2.62005208911 z"/>
+                            </g>
+                        </g>
+                    </svg>
+                    <a href="/pages/user-dashboard.html" class="navbar-back-btn">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="navbar-menu">
+                    <span class="navbar-user">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userName">User</span>
+                    </span>
+                    <button class="btn btn-sm btn-outline" onclick="AUTH.logout()">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <h1 id="requestName" class="card-title">Loading...</h1>
+                <p id="requestDescription" class="text-muted"></p>
+                <div class="progress-container">
+                    <div class="d-flex justify-between align-center mb-1">
+                        <span>Tiến độ hoàn thành</span>
+                        <span id="progressText">0/0</span>
+                    </div>
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="questionsContainer"></div>
+        
+        <div class="submit-container">
+            <button id="submitBtn" class="btn btn-primary btn-lg" onclick="submitAnswers()">
+                <i class="fas fa-paper-plane"></i> Gửi khảo sát
+            </button>
+        </div>
+    </div>
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/answer-dynamic.js"></script>
+    <script>
+        let currentRequest = null;
+        let questions = [];
+        let isLocked = false;
+        
+        if (!AUTH.requireAuth()) {
+            // Redirect handled by requireAuth
+        } else {
+            const requestId = getUrlParam('id');
+            if (!requestId) {
+                alert('Không tìm thấy khảo sát');
+                window.location.href = '/pages/user-dashboard.html';
+            } else {
+                loadSurvey(requestId);
+            }
+        }
+        
+        function calculateProgress(answered, total) {
+            if (total === 0) return 0;
+            return Math.round((answered / total) * 100);
+        }
+        
+        async function loadSurvey(requestId) {
+            const user = AUTH.getCurrentUser();
+            document.getElementById('userName').textContent = user.userInfo || user.username;
+            
+            try {
+                showLoading(document.getElementById('questionsContainer'));
+                const requestResponse = await API.get(CONFIG.ENDPOINTS.REQUEST_BY_ID(requestId));
+                currentRequest = requestResponse.request;
+                const questionsResponse = await API.get(CONFIG.ENDPOINTS.QUESTIONS_BY_REQUEST(requestId));
+                const answersResponse = await API.get(CONFIG.ENDPOINTS.USER_ANSWERS(requestId));
+                hideLoading(document.getElementById('questionsContainer'));
+                
+                document.getElementById('requestName').textContent = currentRequest.reqName;
+                document.getElementById('requestDescription').innerHTML = renderRichText(currentRequest.reqDes || '');
+                
+                if (answersResponse.answers && answersResponse.answers.length > 0) {
+                    answerManager.loadExistingAnswers(
+                        answersResponse.answers,
+                        answersResponse.opinionCounts || {}
+                    );
+                }
+                
+                displayQuestions(questionsResponse.documents, answersResponse.answers);
+                updateProgress();
+                
+                if (currentRequest && currentRequest.isLocked) {
+                    lockSurvey();
+                }
+            } catch (error) {
+                hideLoading(document.getElementById('questionsContainer'));
+                document.getElementById('questionsContainer').innerHTML = '<div class="alert alert-danger">Không thể tải khảo sát. Vui lòng thử lại.</div>';
+                console.error('Load survey error:', error);
+            }
+        }
+        
+        function lockSurvey() {
+            isLocked = true;
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-warning';
+            alertDiv.innerHTML = '<i class="fas fa-lock"></i> <strong>Khảo sát này đã bị khóa.</strong> Bạn chỉ có thể xem, không thể thay đổi câu trả lời.';
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            document.querySelectorAll('input, textarea, button').forEach(el => {
+                el.disabled = true;
+                el.style.opacity = '0.6';
+                el.style.cursor = 'not-allowed';
+            });
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').style.opacity = '0.5';
+            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-lock"></i> Đợt lấy ý kiến đã khóa';
+        }
+        
+        function displayQuestions(documents, existingAnswers) {
+            const container = document.getElementById('questionsContainer');
+            questions = [];
+            if (!documents || documents.length === 0) {
+                container.innerHTML = '<p class="text-muted">Không có câu hỏi nào</p>';
+                return;
+            }
+            
+            let questionIndex = 0;
+            container.innerHTML = documents.map((doc, docIndex) => {
+                return `<div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-file-pdf text-danger"></i> ${renderRichText(doc.docDes)}
+                        </div>
+                        <p class="text-small text-muted mb-0">Số hiệu: ${doc.docNum || 'N/A'}</p>
+                        ${doc.pdfUrl ? `<a href="${buildPdfUrl(doc.pdfUrl)}" target="_blank" class="btn btn-sm btn-outline mt-2">
+                            <i class="fas fa-download"></i> Xem văn bản
+                        </a>` : ''}
+                    </div>
+                    <div class="card-body">
+                        ${doc.questions.map((q, qIndex) => {
+                            questionIndex++;
+                            questions.push(q);
+                            const questionAnswers = existingAnswers?.find(ea => ea.queId === q.queId);
+                            return createQuestionHTML(q, questionIndex, questionAnswers);
+                        }).join('')}
+                    </div>
+                </div>`;
+            }).join('');
+            
+            setTimeout(() => {
+                questions.forEach(q => {
+                    const questionAnswers = existingAnswers?.find(ea => ea.queId === q.queId);
+                    answerManager.initQuestion(q.queId, q.queType, questionAnswers ? questionAnswers.answers : []);
+                });
+            }, 100);
+        }
+        
+        function createQuestionHTML(question, index, existingAnswers) {
+            let html = `<div class="question-item" data-question-id="${question.queId}" data-question-type="${question.queType}">
+                <div class="question-header">
+                    <div style="flex: 1">
+                        <div class="form-label" style="white-space: pre-wrap;">
+                            ${renderRichText(question.queDes)}
+                            ${question.quesAns ? `<div class="text-small text-muted">(Gợi ý: ${escapeHtml(question.quesAns)})</div>` : ''}
+                        </div>`;
+            
+            if (question.queType === 'BOOLEAN') {
+                const existingAnswer = existingAnswers?.answers?.find(a => a.ans_user) || {};
+                const opinionCount = existingAnswers?.answers?.length - 1 || 0;
 
-   <div class="container">
-       <div class="card">
-           <h1 id="requestName">Loading...</h1>
-           <div id="requestDescription" style="margin-bottom: 1rem;"></div>
-           
-           <div class="progress-container" style="margin-top: 1rem;">
-               <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                   <span>Tiến độ hoàn thành</span>
-                   <span id="progressText">0/0</span>
-               </div>
-               <div class="progress">
-                   <div id="progressBar" class="progress-bar" style="width: 0%">0%</div>
-               </div>
-           </div>
-       </div>
+                html += `
+                    <div class="answers-section">
+                        <div class="answers-row" style="display: flex; gap: 1rem; align-items: flex-start;">
+                            
+                            <!-- Ô nhập số lượng thống nhất -->
+                            <div class="answers-col" style="flex: 1;">
+                                <label class="form-label">Số lượng thống nhất</label>
+                                <input type="text" 
+                                    id="answer_text_${question.queId}" 
+                                    name="q_${question.queId}" 
+                                    data-question-id="${question.queId}" 
+                                    value="${existingAnswer.ans_user || ''}" 
+                                    placeholder="Nhập số lượng thống nhất...">
+                            </div>
 
-       <div id="questionsContainer"></div>
+                            <!-- Ô nhập số lượng ý kiến khác -->
+                            <div class="answers-col" style="flex: 1;">
+                                <label class="form-label">Số lượng ý kiến khác</label>
+                                <input type="number" 
+                                    id="opinion_count_${question.queId}" 
+                                    min="${opinionCount}" 
+                                    value="${opinionCount}" 
+                                    onchange="answerManager.updateOpinionCount(${question.queId}, parseInt(this.value))"
+                                    placeholder="Nhập số lượng ý kiến khác...">
+                            </div>
+                        </div>
 
-       <div style="text-align: center; margin: 2rem 0;">
-           <button class="btn btn-primary" onclick="submitAnswers()" style="padding: 0.75rem 2rem;">
-               Gửi khảo sát
-           </button>
-       </div>
-   </div>
-
-   <script src="../js/config.js"></script>
-   <script src="../js/api.js"></script>
-   <script src="../js/auth.js"></script>
-   <script>
-       const urlParams = new URLSearchParams(window.location.search);
-       const requestId = urlParams.get('id');
-       let questions = [];
-       let currentRequest = null;
-
-       if (!AUTH.requireAuth() || !requestId) {
-           window.location.href = 'user-dashboard.html';
-       }
-
-       async function loadSurvey() {
-           const user = AUTH.getCurrentUser();
-           document.getElementById('userName').textContent = user.fullName || user.user_info || 'User';
-
-           try {
-               // Load request details
-               const requestResponse = await API.get(`/requests/${requestId}`);
-               currentRequest = requestResponse.request;
-               document.getElementById('requestName').textContent = currentRequest.title;
-               document.getElementById('requestDescription').innerHTML = currentRequest.description || '';
-
-               // Load questions
-               const questionsResponse = await API.get(CONFIG.ENDPOINTS.QUESTIONS_BY_REQUEST(requestId));
-               displayQuestions(questionsResponse.documents);
-
-               // Load existing answers
-               const answersResponse = await API.get(CONFIG.ENDPOINTS.USER_ANSWERS(requestId));
-               if (answersResponse.answers) {
-                   answersResponse.answers.forEach(ans => {
-                       const input = document.querySelector(`[data-question-id="${ans.questionId}"]`);
-                       if (input) {
-                           if (input.type === 'radio') {
-                               const radio = document.querySelector(`input[name="q_${ans.questionId}"][value="${ans.userAnswer}"]`);
-                               if (radio) radio.checked = true;
-                           } else {
-                               input.value = ans.userAnswer;
-                           }
-                       }
-                   });
-               }
-
-               updateProgress();
-           } catch (error) {
-               console.error('Error loading survey:', error);
-           }
-       }
-
-       function displayQuestions(documents) {
-           const container = document.getElementById('questionsContainer');
-           
-           documents.forEach(doc => {
-               const docCard = document.createElement('div');
-               docCard.className = 'card';
-               docCard.innerHTML = `
-                   <div>${doc.description || ''}</div>
-                   <p style="color: var(--gray-500); font-size: 0.875rem;">Số hiệu: ${doc.documentNumber || 'N/A'}</p>
-                   ${doc.pdfUrl ? `<a href="http://localhost:3000${doc.pdfUrl}" target="_blank">📄 Xem văn bản</a>` : ''}
-                   <div style="margin-top: 1rem;">
-                       ${doc.questions ? doc.questions.map(q => {
-                           questions.push(q);
-                           return createQuestionHTML(q);
-                       }).join('') : ''}
-                   </div>
-               `;
-               container.appendChild(docCard);
-           });
-       }
-
-       function createQuestionHTML(question) {
-           if (question.type === 'BOOLEAN') {
-               return `
-                   <div style="margin-bottom: 1.5rem;">
-                       <p style="font-weight: 500; margin-bottom: 0.5rem;">${question.content}</p>
-                       <div style="display: flex; gap: 1rem;">
-                           <label>
-                               <input type="radio" name="q_${question.id}" value="YES" 
-                                      data-question-id="${question.id}" onchange="updateProgress()">
-                               Đồng ý
-                           </label>
-                           <label>
-                               <input type="radio" name="q_${question.id}" value="NO" 
-                                      data-question-id="${question.id}" onchange="updateProgress()">
-                               Không đồng ý
-                           </label>
-                       </div>
-                   </div>
-               `;
-           } else {
-               return `
-                   <div style="margin-bottom: 1.5rem;">
-                       <p style="font-weight: 500; margin-bottom: 0.5rem;">${question.content}</p>
-                       <textarea class="form-control" rows="3" 
-                                 data-question-id="${question.id}"
-                                 onchange="updateProgress()"
-                                 placeholder="Nhập câu trả lời của bạn..."></textarea>
-                   </div>
-               `;
-           }
-       }
-
-       function collectAnswers() {
-           const answers = [];
-           questions.forEach(q => {
-               let answer = null;
-               
-               if (q.type === 'BOOLEAN') {
-                   const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
-                   if (selected) {
-                       answer = selected.value;
-                   }
-               } else {
-                   const textarea = document.querySelector(`[data-question-id="${q.id}"]`);
-                   if (textarea && textarea.value.trim()) {
-                       answer = textarea.value.trim();
-                   }
-               }
-               
-               if (answer) {
-                   answers.push({
-                       questionId: q.id,
-                       userAnswer: answer,
-                       reason: null
-                   });
-               }
-           });
-           return answers;
-       }
-
-       function updateProgress() {
-           const answered = collectAnswers().length;
-           const total = questions.length;
-           const percentage = total > 0 ? Math.round((answered / total) * 100) : 0;
-           
-           document.getElementById('progressText').textContent = `${answered}/${total}`;
-           document.getElementById('progressBar').style.width = `${percentage}%`;
-           document.getElementById('progressBar').textContent = `${percentage}%`;
-       }
-
-       async function submitAnswers() {
-           const answers = collectAnswers();
-           
-           if (answers.length === 0) {
-               alert('Vui lòng trả lời ít nhất một câu hỏi');
-               return;
-           }
-           
-           try {
-               await API.post(CONFIG.ENDPOINTS.SUBMIT_MULTIPLE_ANSWERS, { answers });
-               alert('Gửi khảo sát thành công!');
-               window.location.href = 'user-dashboard.html';
-           } catch (error) {
-               alert('Không thể gửi khảo sát. Vui lòng thử lại!');
-           }
-       }
-
-       loadSurvey();
-   </script>
+                        <!-- Container chứa các textbox bổ sung -->
+                        <div id="answers_container_${question.queId}" style="margin-top: 1rem;"></div>
+                    </div>`;
+            } else if (question.queType === 'TEXT') {
+                // SỬA: TEXT chỉ có 1 textarea duy nhất
+                const existingText = existingAnswers?.answers?.[0]?.ans_user || '';
+                html += `
+                    <div class="answers-section mt-2">
+                        <label class="form-label text-small">Nội dung ý kiến:</label>
+                        <textarea 
+                            id="answer_text_${question.queId}"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Nhập ý kiến của bạn..."
+                            data-question-id="${question.queId}"
+                            onchange="answerManager.updateTextAnswer(${question.queId}, this.value)"
+                        >${existingText}</textarea>
+                    </div>
+                `;
+            } else if (question.queType === 'NUMBER') {
+                html += `<div class="answers-section mt-2">
+                    <label class="form-label text-small">Giá trị cần tổng hợp:</label>
+                    <div id="answers_container_${question.queId}"></div>
+                </div>`;
+            }
+            
+            html += `</div>
+                <div class="question-counter" id="counter_${question.queId}"></div>
+            </div></div>`;
+            return html;
+        }
+        
+        function updateProgress() {
+            const allAnswers = answerManager.collectAllAnswers();
+            const answered = allAnswers.length;
+            const total = questions.length;
+            const percentage = calculateProgress(answered, total);
+            
+            document.getElementById('progressText').textContent = `${answered}/${total}`;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('progressBar').textContent = `${percentage}%`;
+        }
+        
+        async function saveDraft() {
+            if (isLocked) {
+                showAlert('Khảo sát đã bị khóa. Không thể lưu nháp.', 'warning');
+                return;
+            }
+            const collectedAnswers = answerManager.collectAllAnswers();
+            if (collectedAnswers.length === 0) {
+                showAlert('Chưa có câu trả lời nào để lưu', 'warning');
+                return;
+            }
+            showAlert('Đang lưu nháp...', 'info');
+            localStorage.setItem(`draft_${currentRequest.reqId}`, JSON.stringify(collectedAnswers));
+            showAlert('Đã lưu nháp thành công!', 'success');
+        }
+        
+        async function submitAnswers() {
+            if (isLocked) {
+                showAlert('Khảo sát đã bị khóa. Không thể gửi câu trả lời.', 'warning');
+                return;
+            }
+            const collectedAnswers = answerManager.collectAllAnswers();
+            if (collectedAnswers.length === 0) {
+                showAlert('Vui lòng trả lời ít nhất một câu hỏi', 'warning');
+                return;
+            }
+            if (collectedAnswers.length < questions.length) {
+                if (!confirm(`Bạn mới trả lời ${collectedAnswers.length}/${questions.length} câu hỏi. Bạn có muốn gửi không?`)) {
+                    return;
+                }
+                // showAlert('Vui lòng Hoàn Thiện Khảo Sát', 'warning');
+                return;
+            }
+            try {
+                document.getElementById('submitBtn').disabled = true;
+                showLoading(document.querySelector('.submit-container'));
+                const response = await API.post(CONFIG.ENDPOINTS.SUBMIT_MULTIPLE_ANSWERS, {
+                    answers: collectedAnswers
+                });
+                hideLoading(document.querySelector('.submit-container'));
+                localStorage.removeItem(`draft_${currentRequest.reqId}`);
+                showAlert('Đã ghi nhận phiếu ý kiến thành công.', 'success');
+                setTimeout(() => {
+                    window.location.href = '/pages/user-dashboard.html';
+                }, 2000);
+            } catch (error) {
+                hideLoading(document.querySelector('.submit-container'));
+                document.getElementById('submitBtn').disabled = false;
+                if (error.message && error.message.includes('locked')) {
+                    showAlert('Khảo sát đã bị khóa. Không thể gửi câu trả lời.', 'warning');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showAlert('Không thể ghi nhận phiếu ý kiến. Vui lòng thử lại!', 'danger');
+                }
+                console.error(error);
+            }
+        }
+        
+        setInterval(() => {
+            if (questions.length > 0 && !isLocked) {
+                const collectedAnswers = answerManager.collectAllAnswers();
+                if (collectedAnswers.length > 0) {
+                    localStorage.setItem(`draft_${currentRequest.reqId}`, JSON.stringify(collectedAnswers));
+                    console.log('Auto-saved draft');
+                }
+            }
+        }, 30000);
+        
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('input[type="radio"], input[type="text"], textarea, input[type="number"]')) {
+                updateProgress();
+            }
+        });
+    </script>
 </body>
 </html>

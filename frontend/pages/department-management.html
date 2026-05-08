@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Phòng ban - Opinion Collector</title>
+    
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Variables */
+        :root {
+            --primary-red: #B22222;      /* Đỏ đô */
+            --secondary-gold: #FFD700;   /* Vàng Kim */
+            --neutral-white: #FFFFFF;    /* Trắng tinh khiết */
+            --neutral-gray-bg: #F5F7FA;  /* Nền xám nhẹ */
+            --neutral-gray-border: #E0E0E0; /* Viền xám */
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --info-blue: #3498DB;
+            --warning-orange: #F39C12;
+            --success-green: #2ECC71;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+        }
+
+        body {
+            display: flex;
+            margin: 0;
+            background-color: var(--neutral-gray-bg);
+            font-family: "Times New Roman", Times, serif;
+            color: var(--text-dark);
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: var(--primary-red);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            color: var(--neutral-white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .sidebar-header .logo-dang {
+            width: 80px;
+            height: 53px;
+            flex-shrink: 0;
+            fill: var(--secondary-gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-header span {
+            flex-grow: 1;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--neutral-white);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255,255,255,0.2);
+            font-weight: 600;
+            color: var(--neutral-white);
+            border-left: 5px solid var(--secondary-gold);
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.95rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.8rem;
+            color: var(--neutral-white);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .user-info i {
+            color: var(--secondary-gold);
+        }
+
+        .datetime-info {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 1.2rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 2.5rem;
+            min-height: 100vh;
+            background-color: var(--neutral-gray-bg);
+        }
+        
+        .content-section {
+            background-color: var(--neutral-white);
+            padding: 2rem;
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .section-header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            text-transform: uppercase;
+        }
+
+        .btn {
+            padding: 0.8rem 1.6rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+        }
+        
+        .btn-primary:hover {
+            background-color: #A01C1C;
+        }
+
+        .btn-gold {
+            background-color: var(--secondary-gold);
+            color: var(--primary-red);
+            border: 1px solid var(--secondary-gold);
+        }
+        
+        .btn-gold:hover {
+            background-color: #FFC700;
+        }
+
+        .btn-secondary {
+            background-color: #ECF0F1;
+            color: var(--text-dark);
+            border: 1px solid var(--neutral-gray-border);
+        }
+        
+        .btn-sm {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-danger {
+            background-color: #E74C3C;
+            color: var(--neutral-white);
+        }
+
+        .btn-danger:hover {
+            background-color: #C0392B;
+        }
+
+        .btn-info {
+            background-color: var(--info-blue);
+            color: var(--neutral-white);
+        }
+        .btn-info:hover {
+            background-color: #2980B9;
+        }
+
+        .table-responsive {
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            background-color: var(--neutral-white);
+        }
+        
+        .table thead th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            background-color: #E8EDF2;
+            border-bottom: 2px solid var(--neutral-gray-border);
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--neutral-gray-border);
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr:hover {
+            background-color: #F8F9FB;
+        }
+        
+        .modal-content {
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+            padding: 1.5rem 2rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 1.5rem 2rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--neutral-gray-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: border-color 0.2s;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--info-blue);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+
+        .badge-success {
+            color: var(--neutral-white);
+            background-color: var(--success-green);
+        }
+
+        .badge-danger {
+            color: var(--neutral-white);
+            background-color: var(--danger-red);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <svg class="logo-dang"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 238.125 158.75"
+                version="1.1"
+                id="svg19731">
+                <defs id="defs19725" />
+                <g id="layer1" transform="translate(242.66,-104.97)">
+                    <rect style="fill:#da251d;fill-opacity:1;" width="238.125" height="158.75" x="-242.66" y="104.97" />
+                    <g id="g19710-9" transform="matrix(1.051,0,0,1.051,6601.25,-1637.35)" style="fill:var(--secondary-gold);fill-opacity:1;">
+                        <path id="path19657-0-4"
+                            d="m -6436.471547371615,1742.926950096642 c 6.38779271804,7.230641357446 14.963163305737,12.502793149194 24.298667889062,14.938860558647 6.056211101325,1.5803471957 12.472708435771,1.978650572228 18.596462444365,0.684499497231 6.123754008594,-1.294151074997 11.937748010956,-4.335579482059 16.158102214692,-8.957678632632 4.574893298958,-5.010387614465 7.112965317221,-11.701447693132 7.640977625143,-18.465679781602 0.528012307931,-6.76423208847 -0.871424851367,-13.593465851735 -3.428046439768,-19.878155088105 -4.560331599745,-11.210210791164 -12.883741385267,-20.851111282196 -23.308680635365,-26.998150562502 8.512796781266,0.709574410866 16.805946699762,3.8827694509 23.618107102883,9.036959544979 6.812160403116,5.154190094079 12.120611342006,12.272184963572 15.117966521428,20.271376598489 2.997355179421,7.999191634919 3.673617806543,16.852901094338 1.925932041966,25.214527691603 -1.747685764577,8.361626597266 -5.913491031185,16.203282596691 -11.863819649182,22.332295096395 -8.683007967653,8.943752149713 -21.1800682394,14.055514292711 -33.64194922505,13.760807647735 -12.461880992656,-0.294706644979 -24.703333498127,-5.991501184333 -32.953855939355,-15.335708444904 l -14.556480332948,14.556690177998 -9.381909223252,-9.381909223192 z"
+                        />
+                    <path id="path19683-5-7"
+                        d="m -6392.699744590418,1702.503831581282 -10.959354263905,10.959354263781 49.262553323164,49.262553323191 -11.130862671953,11.240941835746 -49.317592904992,-49.317592905071 -8.654444010462,8.654444010525 -12.790755991701,-12.790755991717 21.572665110517,-21.572665110577 c 2.680889538451,0.275819129839 5.402702461607,0.150469066643 8.046892630834,-0.370590679184 2.581477478967,-0.508701686704 5.088366413035,-1.394314604689 7.416535436053,-2.62005208911 z"
+                        />
+                </g>
+            </g>
+        </svg>
+        <span>Hệ thống Thu thập ý kiến Phường Xã</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/pages/admin-dashboard.html" class="nav-item">
+                <i class="fas fa-comments"></i>
+                <span>Quản lý Thu thập ý kiến</span>
+            </a>
+            <a href="/pages/user-management.html" class="nav-item">
+                <i class="fas fa-users-cog"></i>
+                <span>Quản lý Cán bộ Công vụ</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <i class="fas fa-sitemap"></i>
+                <span>Quản lý Ban, Phòng, Đơn vị</span>
+            </a>
+            <a href="/pages/admin-report.html" class="nav-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>Báo cáo khảo sát</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="adminName">Phước Tấn</span>
+            </div>
+            <div class="datetime-info">
+                <i class="fas fa-calendar-alt"></i> <span id="currentDate"></span><br>
+                <i class="fas fa-clock"></i> <span id="currentTime"></span>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="AUTH.logout()">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </button>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <section id="departments-section" class="content-section">
+            <div class="section-header">
+                <h1>Quản lý Ban, Phòng, Đơn vị</h1>
+                <button class="btn btn-primary" onclick="showAddModal()">
+                    <i class="fas fa-plus-circle"></i> Thêm mới
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tên phòng ban</th>
+                            <th>Tổng nhân viên</th>
+                            <th>Đang hoạt động</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="departmentsTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div id="departmentModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2 id="modalTitle">Thêm phòng ban</h2>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="departmentForm" style="padding: 1.5rem 2rem;">
+                <input type="hidden" id="departId">
+                <div class="form-group">
+                    <label class="form-label">Tên phòng ban *</label>
+                    <input type="text" id="name" class="form-control" required>
+                </div>
+                <div class="modal-footer" style="padding: 0; border: none; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="usersModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="usersModalTitle">Danh sách nhân viên</h2>
+                <span class="modal-close" onclick="closeUsersModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="usersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let currentEditId = null;
+
+        // Cập nhật ngày giờ
+        function updateDateTime() {
+            const now = new Date();
+            const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('vi-VN', optionsDate);
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('vi-VN', optionsTime);
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Check admin auth
+        if (!AUTH.requireAuth() || !AUTH.requireAdmin()) {
+            window.location.href = '/pages/login.html';
+        } else {
+            const user = AUTH.getCurrentUser();
+            document.getElementById('adminName').textContent = user.userInfo || user.username || 'Người dùng';
+        }
+
+        // Load departments on init
+        loadDepartments();
+
+        // Load departments
+        async function loadDepartments() {
+            try {
+                const response = await API.get('/departments?stats=true');
+                displayDepartments(response.departments);
+            } catch (error) {
+                console.error('Load departments error:', error);
+                showAlert('Không thể tải danh sách phòng ban', 'danger');
+            }
+        }
+
+        // Display departments
+        function displayDepartments(departments) {
+            const tbody = document.getElementById('departmentsTableBody');
+            
+            if (!departments || departments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Không có dữ liệu</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = departments.map(dept => `
+                <tr>
+                    <td>${dept.name}</td>
+                    <td>${dept.total_users || 0}</td>
+                    <td>${dept.active_users || 0}</td>
+                    <td>${formatDateShort(dept.created_at)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editDepartment(${dept.departmentId}, '${dept.name}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="viewUsers(${dept.departmentId}, '${dept.name}')">
+                            <i class="fas fa-users"></i>
+                        </button>
+                        ${dept.total_users == 0 
+                            ? `<button class="btn btn-sm btn-danger" onclick="deleteDepartment(${dept.departmentId})">
+                                <i class="fas fa-trash"></i>
+                               </button>`
+                            : `<button class="btn btn-sm btn-danger" disabled title="Không thể xóa phòng ban có nhân viên">
+                                <i class="fas fa-trash"></i>
+                               </button>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Show add modal
+        function showAddModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'Thêm phòng ban';
+            document.getElementById('departmentForm').reset();
+            document.getElementById('departmentModal').style.display = 'block';
+        }
+
+        // Edit department
+        function editDepartment(id, name) {
+            currentEditId = id;
+            document.getElementById('modalTitle').textContent = 'Cập nhật phòng ban';
+            document.getElementById('departId').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('departmentModal').style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('departmentModal').style.display = 'none';
+        }
+
+        // Handle form submit
+        document.getElementById('departmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            
+            try {
+                if (currentEditId) {
+                    await API.put(`/departments/${currentEditId}`, { name });
+                    showAlert('Cập nhật phòng ban thành công', 'success');
+                } else {
+                    await API.post('/departments', { name });
+                    showAlert('Thêm phòng ban thành công', 'success');
+                }
+                closeModal();
+                loadDepartments();
+            } catch (error) {
+                showAlert(error.message || 'Có lỗi xảy ra', 'danger');
+            }
+        });
+
+        // Delete department
+        async function deleteDepartment(id) {
+            if (!confirm('Bạn có chắc muốn xóa phòng ban này?')) {
+                return;
+            }
+            
+            try {
+                await API.delete(`/departments/${id}`);
+                showAlert('Xóa phòng ban thành công', 'success');
+                loadDepartments();
+            } catch (error) {
+                showAlert(error.message || 'Không thể xóa phòng ban', 'danger');
+            }
+        }
+
+        // View users in department
+        async function viewUsers(departId, departName) {
+            try {
+                const response = await API.get(`/departments/${departId}/users`);
+                document.getElementById('usersModalTitle').textContent = `Nhân viên - ${departName}`;
+                
+                const usersList = document.getElementById('usersList');
+                if (!response.users || response.users.length === 0) {
+                    usersList.innerHTML = '<p>Không có nhân viên trong phòng ban này</p>';
+                } else {
+                    usersList.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Họ tên</th>
+                                        <th>Vai trò</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${response.users.map(user => `
+                                        <tr>
+                                            <td>${user.username}</td>
+                                            <td>${user.userInfo || '-'}</td>
+                                            <td>${user.role}</td>
+                                            <td>
+                                                <span class="badge badge-${user.is_active ? 'success' : 'danger'}">
+                                                    ${user.is_active ? 'Đang hoạt động' : 'Đã khóa'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('usersModal').style.display = 'block';
+            } catch (error) {
+                showAlert('Không thể tải danh sách nhân viên', 'danger');
+            }
+        }
+
+        function closeUsersModal() {
+            document.getElementById('usersModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

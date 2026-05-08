@@ -1,178 +1,956 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Admin Dashboard - Opinion Collector</title>
-   <link rel="stylesheet" href="../css/style.css">
-   <style>
-       .dashboard-grid {
-           display: grid;
-           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-           gap: 1rem;
-           margin-bottom: 2rem;
-       }
-       .stat-card {
-           background: white;
-           padding: 1.5rem;
-           border-radius: 0.5rem;
-           box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-           cursor: pointer;
-           transition: transform 0.2s;
-       }
-       .stat-card:hover {
-           transform: translateY(-2px);
-           box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-       }
-       .stat-value {
-           font-size: 2rem;
-           font-weight: bold;
-           color: var(--primary-color);
-       }
-       .stat-label {
-           color: var(--gray-500);
-           font-size: 0.875rem;
-           margin-top: 0.5rem;
-       }
-       .quick-actions {
-           display: grid;
-           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-           gap: 1rem;
-           margin-top: 2rem;
-       }
-       .action-card {
-           background: white;
-           padding: 1rem;
-           border-radius: 0.5rem;
-           text-align: center;
-           border: 2px solid var(--gray-200);
-           cursor: pointer;
-           transition: all 0.3s;
-           text-decoration: none;
-           color: inherit;
-       }
-       .action-card:hover {
-           border-color: var(--primary-color);
-           background: var(--gray-50);
-       }
-       .action-icon {
-           font-size: 2rem;
-           margin-bottom: 0.5rem;
-       }
-   </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Thu thập ý kiến Phường Xã</title>
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Variables */
+        :root {
+            --primary-red: #B22222;      /* Đỏ đô */
+            --secondary-gold: #FFD700;   /* Vàng Kim */
+            --neutral-white: #FFFFFF;    /* Trắng tinh khiết */
+            --neutral-gray-bg: #F5F7FA;  /* Nền xám nhẹ */
+            --neutral-gray-border: #E0E0E0; /* Viền xám */
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --info-blue: #3498DB;
+            --warning-orange: #F39C12;
+            --success-green: #2ECC71;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+        }
+
+        body {
+            display: flex;
+            margin: 0;
+            background-color: var(--neutral-gray-bg);
+            font-family: "Times New Roman", Times, serif;
+            color: var(--text-dark);
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: var(--primary-red);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            color: var(--neutral-white);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .sidebar-header .logo-dang {
+            width: 80px;
+            height: 53px;
+            flex-shrink: 0;
+            fill: var(--secondary-gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-header span {
+            flex-grow: 1;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--neutral-white);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255,255,255,0.2);
+            font-weight: 600;
+            color: var(--neutral-white);
+            border-left: 5px solid var(--secondary-gold);
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.95rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.8rem;
+            color: var(--neutral-white);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .user-info i {
+            color: var(--secondary-gold);
+        }
+
+        .datetime-info {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 1.2rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 2.5rem;
+            min-height: 100vh;
+            background-color: var(--neutral-gray-bg);
+        }
+
+        .content-section {
+            background-color: var(--neutral-white);
+            padding: 2rem;
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .section-header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            text-transform: uppercase;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.6rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+        }
+        
+        .btn-primary:hover {
+            background-color: #A01C1C;
+        }
+
+        .btn-gold {
+            background-color: var(--secondary-gold);
+            color: var(--primary-red);
+            border: 1px solid var(--secondary-gold);
+        }
+        
+        .btn-gold:hover {
+            background-color: #FFC700;
+        }
+
+        .btn-status-open {
+            background-color: #28a745;
+            color: var(--neutral-white);
+            border-radius: 50px;
+            padding: 0.4rem 1rem;
+        }
+
+        .btn-status-locked {
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+            border-radius: 50px;
+            padding: 0.4rem 1rem;
+        }
+        
+        .btn-secondary {
+            background-color: #ECF0F1;
+            color: var(--text-dark);
+            border: 1px solid var(--neutral-gray-border);
+        }
+        
+        .btn-sm {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+        }
+        
+        .table-responsive {
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            background-color: var(--neutral-white);
+        }
+        
+        .table thead th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            background-color: #E8EDF2;
+            border-bottom: 2px solid var(--neutral-gray-border);
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--neutral-gray-border);
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr:hover {
+            background-color: #F8F9FB;
+        }
+
+        .table td:nth-child(2) {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table td:last-child {
+            white-space: nowrap;
+        }
+        
+        .table .btn-sm {
+            padding: 0.4rem 0.8rem;
+        }
+
+        .modal-content {
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background-color: var(--primary-red);
+            color: var(--neutral-white);
+            padding: 1.5rem 2rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: border-color 0.2s;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--info-blue);
+        }
+
+        .no-requests-message {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            background-color: var(--neutral-white);
+            border-radius: var(--border-radius-md);
+            border: 1px dashed var(--neutral-gray-border);
+            margin-top: 1rem;
+        }
+    </style>
 </head>
 <body>
-   <nav class="navbar">
-       <div class="container">
-           <div class="navbar-content">
-               <h1 style="color: var(--primary-color);">Admin Dashboard</h1>
-               <div>
-                   <span id="adminName"></span>
-                   <button class="btn btn-danger" onclick="AUTH.logout()">Đăng xuất</button>
-               </div>
-           </div>
-       </div>
-   </nav>
-   
-   <div class="container">
-       <!-- Statistics Cards -->
-       <div class="dashboard-grid">
-           <div class="stat-card" onclick="window.location.href='admin-users.html'">
-               <div class="stat-value" id="totalUsers">0</div>
-               <div class="stat-label">Tổng người dùng</div>
-           </div>
-           <div class="stat-card" onclick="window.location.href='admin-requests.html'">
-               <div class="stat-value" id="totalRequests">0</div>
-               <div class="stat-label">Tổng khảo sát</div>
-           </div>
-           <div class="stat-card">
-               <div class="stat-value" id="totalDocuments">0</div>
-               <div class="stat-label">Tổng văn kiện</div>
-           </div>
-           <div class="stat-card">
-               <div class="stat-value" id="totalAnswers">0</div>
-               <div class="stat-label">Tổng câu trả lời</div>
-           </div>
-       </div>
-       
-       <!-- Quick Actions -->
-       <h3>Thao tác nhanh</h3>
-       <div class="quick-actions">
-           <a href="admin-requests.html" class="action-card">
-               <div class="action-icon">📋</div>
-               <div>Quản lý Khảo sát</div>
-           </a>
-           <a href="admin-users.html" class="action-card">
-               <div class="action-icon">👥</div>
-               <div>Quản lý Người dùng</div>
-           </a>
-           <a href="#" onclick="createNewRequest()" class="action-card">
-               <div class="action-icon">➕</div>
-               <div>Tạo Khảo sát Mới</div>
-           </a>
-       </div>
-       
-       <!-- Recent Activity -->
-       <div class="card" style="margin-top: 2rem;">
-           <h3>Hoạt động gần đây</h3>
-           <div id="recentActivity">
-               <div class="loading">
-                   <div class="spinner"></div>
-               </div>
-           </div>
-       </div>
-   </div>
-   
-   <script src="../js/config.js"></script>
-   <script src="../js/api.js"></script>
-   <script src="../js/auth.js"></script>
-   <script>
-       if (!AUTH.requireAuth() || !AUTH.isAdmin()) {
-           window.location.href = 'user-dashboard.html';
-       }
-       
-       async function loadDashboard() {
-           const user = AUTH.getCurrentUser();
-           document.getElementById('adminName').textContent = user.fullName || user.user_info || 'Admin';
-           
-           try {
-               const response = await API.get('/dashboard/stats');
-               
-               document.getElementById('totalUsers').textContent = response.stats.totalUsers || 0;
-               document.getElementById('totalRequests').textContent = response.stats.totalRequests || 0;
-               document.getElementById('totalDocuments').textContent = response.stats.totalDocuments || 0;
-               document.getElementById('totalAnswers').textContent = response.stats.totalAnswers || 0;
-               
-               // Display recent activity
-               const activityContainer = document.getElementById('recentActivity');
-               if (response.recentActivity && response.recentActivity.length > 0) {
-                   let html = '<table class="table"><thead><tr><th>Ngày</th><th>Người dùng</th><th>Số câu trả lời</th></tr></thead><tbody>';
-                   
-                   response.recentActivity.forEach(activity => {
-                       html += `
-                           <tr>
-                               <td>${new Date(activity.activityDate).toLocaleDateString('vi-VN')}</td>
-                               <td>${activity.activeUsers || 0}</td>
-                               <td>${activity.answersSubmitted || 0}</td>
-                           </tr>
-                       `;
-                   });
-                   
-                   html += '</tbody></table>';
-                   activityContainer.innerHTML = html;
-               } else {
-                   activityContainer.innerHTML = '<p>Chưa có hoạt động nào</p>';
-               }
-           } catch (error) {
-               console.error('Error loading dashboard:', error);
-           }
-       }
-       
-       function createNewRequest() {
-           window.location.href = 'admin-requests.html';
-       }
-       
-       loadDashboard();
-   </script>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <svg class="logo-dang"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 238.125 158.75"
+                version="1.1"
+                id="svg19731">
+                <defs id="defs19725" />
+                <g id="layer1" transform="translate(242.66,-104.97)">
+                    <rect style="fill:#da251d;fill-opacity:1;" width="238.125" height="158.75" x="-242.66" y="104.97" />
+                    <g id="g19710-9" transform="matrix(1.051,0,0,1.051,6601.25,-1637.35)" style="fill:var(--secondary-gold);fill-opacity:1;">
+                        <path id="path19657-0-4"
+                            d="m -6436.471547371615,1742.926950096642 c 6.38779271804,7.230641357446 14.963163305737,12.502793149194 24.298667889062,14.938860558647 6.056211101325,1.5803471957 12.472708435771,1.978650572228 18.596462444365,0.684499497231 6.123754008594,-1.294151074997 11.937748010956,-4.335579482059 16.158102214692,-8.957678632632 4.574893298958,-5.010387614465 7.112965317221,-11.701447693132 7.640977625143,-18.465679781602 0.528012307931,-6.76423208847 -0.871424851367,-13.593465851735 -3.428046439768,-19.878155088105 -4.560331599745,-11.210210791164 -12.883741385267,-20.851111282196 -23.308680635365,-26.998150562502 8.512796781266,0.709574410866 16.805946699762,3.8827694509 23.618107102883,9.036959544979 6.812160403116,5.154190094079 12.120611342006,12.272184963572 15.117966521428,20.271376598489 2.997355179421,7.999191634919 3.673617806543,16.852901094338 1.925932041966,25.214527691603 -1.747685764577,8.361626597266 -5.913491031185,16.203282596691 -11.863819649182,22.332295096395 -8.683007967653,8.943752149713 -21.180068232394,14.055514292711 -33.64194922505,13.760807647735 -12.461880992656,-0.294706644979 -24.703333498127,-5.991501184333 -32.953855939355,-15.335708444904 l -14.556480332948,14.556690177998 -9.381909223252,-9.381909223192 z"
+                            />
+                        <path id="path19683-5-7"
+                            d="m -6392.699744590418,1702.503831581282 -10.959354263905,10.959354263781 49.262553323164,49.262553323191 -11.130862671953,11.240941835746 -49.317592904992,-49.317592905071 -8.654444010462,8.654444010525 -12.790755991701,-12.790755991717 21.572665110517,-21.572665110577 c 2.680889538451,0.275819129839 5.402702461607,0.150469066643 8.046892630834,-0.370590679184 2.581477478967,-0.508701686704 5.088366413035,-1.394314604689 7.416535436053,-2.62005208911 z"
+                            />
+                    </g>
+                </g>
+            </svg>
+            <span>Hệ thống Thu thập ý kiến Phường Xã</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <i class="fas fa-comments"></i>
+                <span>Quản lý Thu thập ý kiến</span>
+            </a>
+            <a href="/pages/user-management.html" class="nav-item">
+                <i class="fas fa-users-cog"></i>
+                <span>Quản lý Cán bộ Công vụ</span>
+            </a>
+            <a href="/pages/department-management.html" class="nav-item">
+                <i class="fas fa-sitemap"></i>
+                <span>Quản lý Ban, Phòng, Đơn vị</span>
+            </a>
+            <a href="/pages/group-management.html" class="nav-item">
+                <i class="fas fa-people-group"></i>
+                <span>Nhóm Đối tượng lấy ý kiến</span>
+            </a>
+            <a href="/pages/admin-report.html" class="nav-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>Báo cáo khảo sát</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="adminName">Phước Tấn</span>
+            </div>
+            <div class="datetime-info">
+                <i class="fas fa-calendar-alt"></i> <span id="currentDate"></span><br>
+                <i class="fas fa-clock"></i> <span id="currentTime"></span>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="AUTH.logout()">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </button>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <section id="requests-section" class="content-section active">
+            <div class="section-header">
+                <h1>VĂN PHÒNG THÀNH ỦY</h1>
+                <div style="display: flex; gap: 0.3rem;">
+                    <button class="btn btn-gold" onclick="window.location.href='/pages/user-management.html'">
+                        <i class="fas fa-users-cog"></i> Quản lý Cán bộ
+                    </button>
+                    <button class="btn btn-gold" onclick="window.location.href='/pages/department-management.html'">
+                        <i class="fas fa-sitemap"></i> Quản lý Đơn vị
+                    </button>
+                    <button class="btn btn-gold" onclick="window.location.href='/pages/group-management.html'">
+                        <i class="fas fa-people-group"></i> Nhóm đối tượng
+                    </button>
+                    <button class="btn btn-gold" onclick="window.location.href='/pages/admin-report.html'">
+                        <i class="fas fa-file-pdf"></i> Báo cáo khảo sát
+                    </button>
+                    <button class="btn btn-primary" onclick="showCreateRequestModal()">
+                        <i class="fas fa-plus-circle"></i> Tạo Yêu cầu mới
+                    </button>
+                </div>
+            </div>
+            
+            <div id="requestsList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+<div id="createRequestModal" style="
+    display: none; /* Đảm bảo modal ẩn ban đầu */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+">
+    <div style="
+        background-color: #fcfcfc;
+        border-radius: 12px;
+        padding: 30px;
+        width: 500px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        font-family: 'Times New Roman', serif;
+    ">
+        <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        ">
+            <h2 style="
+                color: #c00000;
+                font-size: 24px;
+                font-weight: bold;
+                text-align: center;
+                text-transform: uppercase;
+                margin: 0;
+            ">
+                Tạo Yêu cầu Khảo sát ý kiến
+            </h2>
+            <span onclick="closeModal('createRequestModal')" style="
+                font-size: 30px;
+                color: #555;
+                cursor: pointer;
+                font-weight: 300;
+                line-height: 1;
+            ">&times;</span>
+        </div>
+        <form id="createRequestForm" style="
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        ">
+            <div style="
+                display: flex;
+                flex-direction: column;
+            ">
+                <label style="
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                    color: #555;
+                ">
+                    Tên Yêu cầu
+                </label>
+                <input type="text" id="reqName" required style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    box-sizing: border-box;
+                    font-family: inherit;
+                    font-size: 15px;
+                ">
+            </div>
+            <div style="
+                display: flex;
+                flex-direction: column;
+            ">
+                <label style="
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                    color: #555;
+                ">
+                    Nội dung trình bày
+                </label>
+                <textarea id="reqDes" rows="3" style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    box-sizing: border-box;
+                    font-family: inherit;
+                    font-size: 15px;
+                "></textarea>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <label style="
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                    color: #555;
+                ">
+                    Nhóm đối tượng lấy ý kiến
+                </label>
+                <div id="createRequestGroups" class="form-control" style="
+                    min-height: 110px;
+                    overflow: auto;
+                    background: #fffdf7;
+                "></div>
+                <small style="color: #666;">Để trống nếu áp dụng cho toàn bộ cán bộ, công chức, viên chức.</small>
+            </div>
+            <div style="
+                display: flex;
+                justify-content: flex-end;
+                gap: 15px;
+                margin-top: 20px;
+            ">
+                <button type="button" onclick="closeModal('createRequestModal')" style="
+                    padding: 12px 28px;
+                    border: 1px solid #c00000;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    background-color: #ffffff;
+                    color: #c00000;
+                    font-family: inherit;
+                    transition: background-color 0.3s, color 0.3s;
+                ">
+                    HỦY BỎ
+                </button>
+                <button type="submit" style="
+                    padding: 12px 28px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    background-color: #c00000;
+                    color: #ffffff;
+                    font-family: inherit;
+                    transition: background-color 0.3s;
+                ">
+                    LẬP YÊU CẦU
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div id="editRequestPopup" style="
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fcfcfc;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 30px;
+    z-index: 9999;
+    width: 500px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    font-family: 'Times New Roman', serif;
+">
+    <h4 style="
+        color: #c00000;
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 25px;
+        text-transform: uppercase;
+    ">
+        Sửa Đổi Yêu Cầu
+    </h4>
+    <form id="editRequestForm" onsubmit="updateRequest(event)" style="
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    ">
+        <input type="hidden" id="req_edit_id">
+        
+        <div style="
+            display: flex;
+            flex-direction: column;
+        ">
+            <label for="req_edit_name" style="
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #555;
+            ">
+                Tên Yêu Cầu:
+            </label>
+            <input type="text" id="req_edit_name" style="
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-sizing: border-box;
+                font-family: inherit;
+                font-size: 15px;
+            ">
+        </div>
+
+        <div style="
+            display: flex;
+            flex-direction: column;
+        ">
+            <label for="req_edit_des" style="
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #555;
+            ">
+                Nội dung trình bày:
+            </label>
+            <textarea id="req_edit_des" rows="4" style="
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-sizing: border-box;
+                font-family: inherit;
+                font-size: 15px;
+            "></textarea>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+            <label style="
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #555;
+            ">
+                Nhóm đối tượng lấy ý kiến
+            </label>
+            <div id="editRequestGroups" class="form-control" style="
+                min-height: 110px;
+                overflow: auto;
+                background: #fffdf7;
+            "></div>
+            <small style="color: #666;">Để trống nếu đợt lấy ý kiến áp dụng cho toàn bộ đơn vị.</small>
+        </div>
+
+        <div style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+        ">
+            <button type="submit" style="
+                padding: 12px 28px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                background-color: #c00000;
+                color: #ffffff;
+                font-family: inherit;
+                transition: background-color 0.3s;
+            ">
+                CẬP NHẬT
+            </button>
+            <button type="button" onclick="hideEditRequestForm()" style="
+                padding: 12px 28px;
+                border: 1px solid #c00000;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                background-color: #ffffff;
+                color: #c00000;
+                font-family: inherit;
+                transition: background-color 0.3s, color 0.3s;
+            ">
+                HỦY BỎ
+            </button>
+        </div>
+    </form>
+</div>
+
+    
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/rich-editor.js"></script>
+    <script>
+        let requestCache = [];
+        let groupCache = [];
+
+        function updateDateTime() {
+            const now = new Date();
+            const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('vi-VN', optionsDate);
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('vi-VN', optionsTime);
+        }
+
+        function getSelectedGroupIds(containerId) {
+            return Array.from(document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`))
+                .map((checkbox) => Number(checkbox.value));
+        }
+
+        function renderGroupCheckboxes(containerId, selectedIds = []) {
+            const container = document.getElementById(containerId);
+            const selectedSet = new Set((selectedIds || []).map(Number));
+
+            if (!groupCache.length) {
+                container.innerHTML = '<div style="color:#666; font-style:italic;">Chưa có nhóm đối tượng nào được khai báo. Đợt lấy ý kiến sẽ áp dụng cho toàn bộ đơn vị.</div>';
+                return;
+            }
+
+            container.innerHTML = groupCache.map((group) => `
+                <label style="display:flex; gap:0.75rem; align-items:flex-start; padding:0.5rem 0; border-bottom:1px dashed #e2e8f0;">
+                    <input type="checkbox" value="${group.groupId}" ${selectedSet.has(Number(group.groupId)) ? 'checked' : ''}>
+                    <span>
+                        <strong>${escapeHtml(group.groupName)}</strong><br>
+                        <span style="color:#666; font-size:0.9rem;">${escapeHtml(stripHtml(group.groupDescription || '') || 'Không có mô tả chi tiết.')}</span>
+                    </span>
+                </label>
+            `).join('');
+        }
+
+        async function loadGroups() {
+            try {
+                const response = await API.get(CONFIG.ENDPOINTS.GROUPS);
+                groupCache = response.groups || [];
+            } catch (error) {
+                console.error('Không thể tải nhóm đối tượng:', error);
+                groupCache = [];
+            }
+
+            renderGroupCheckboxes('createRequestGroups');
+            renderGroupCheckboxes('editRequestGroups');
+        }
+
+        async function loadAdminDashboard() {
+            const user = AUTH.getCurrentUser();
+            document.getElementById('adminName').textContent = user.userInfo || user.username || 'Người dùng';
+            await Promise.all([loadGroups(), loadRequests()]);
+        }
+
+        async function loadRequests() {
+            try {
+                const response = await API.get(CONFIG.ENDPOINTS.REQUESTS);
+                requestCache = response.requests || [];
+                displayRequests(requestCache);
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu yêu cầu:', error);
+                showAlert('Không thể tải danh sách đợt lấy ý kiến.', 'danger');
+            }
+        }
+
+        function displayRequests(requests) {
+            const container = document.getElementById('requestsList');
+
+            if (!requests || requests.length === 0) {
+                container.innerHTML = '<div class="no-requests-message"><p>Chưa có đợt lấy ý kiến nào được khởi tạo.</p><p>Vui lòng sử dụng chức năng "Tạo Yêu cầu mới" để triển khai nhiệm vụ.</p></div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tên đợt lấy ý kiến</th>
+                                <th>Nội dung</th>
+                                <th>Đối tượng</th>
+                                <th>Số văn kiện</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày khởi tạo</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${requests.map((req) => `
+                                <tr>
+                                    <td>${escapeHtml(req.reqName)}</td>
+                                    <td>${escapeHtml(stripHtml(req.reqDes || '') || 'Chưa cập nhật nội dung trình bày')}</td>
+                                    <td>${formatAudienceGroups(req.audience_groups)}</td>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>${req.documentCount}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm ${req.isLocked ? 'btn-status-locked' : 'btn-status-open'}" onclick="toggleLock(${req.reqId})">
+                                            ${req.isLocked ? '🔒 Đã khóa' : '🔓 Đang mở'}
+                                        </button>
+                                    </td>
+                                    <td>${formatDateShort(req.reqDate)}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-gold" onclick="manageRequest(${req.reqId})" title="Quản trị nội dung">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-gold" onclick="showEditRequestForm(${req.reqId})" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" onclick="duplicateRequest(${req.reqId})" title="Nhân bản">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function formatAudienceGroups(groups) {
+            if (!groups || groups.length === 0) {
+                return '<span style="color:#666;">Toàn bộ đơn vị</span>';
+            }
+
+            return groups.map((group) => `
+                <div style="display:inline-flex; margin:0.15rem 0.2rem 0.15rem 0; padding:0.2rem 0.6rem; border-radius:999px; background:#fff4db; color:#8a4b00; font-size:0.85rem;">
+                    ${escapeHtml(group.groupName)}
+                </div>
+            `).join('');
+        }
+
+        async function toggleLock(requestId) {
+            try {
+                await API.put(CONFIG.ENDPOINTS.TOGGLE_LOCK(requestId));
+                await loadRequests();
+            } catch (error) {
+                console.error('Lỗi khi thay đổi trạng thái:', error);
+                showAlert('Không thể thay đổi trạng thái tiếp nhận.', 'danger');
+            }
+        }
+
+        function showCreateRequestModal() {
+            document.getElementById('createRequestModal').style.display = 'flex';
+            document.getElementById('createRequestForm').reset();
+            RICH_EDITOR.get('reqDes').setHTML('');
+            renderGroupCheckboxes('createRequestGroups');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        document.getElementById('createRequestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                reqName: document.getElementById('reqName').value.trim(),
+                reqDes: RICH_EDITOR.get('reqDes').getHTML(),
+                group_ids: getSelectedGroupIds('createRequestGroups')
+            };
+
+            try {
+                await API.post(CONFIG.ENDPOINTS.REQUESTS, data);
+                showAlert('Đã khởi tạo đợt lấy ý kiến thành công.', 'success');
+                closeModal('createRequestModal');
+                await loadRequests();
+            } catch (error) {
+                showAlert(error.message || 'Không thể khởi tạo đợt lấy ý kiến.', 'danger');
+            }
+        });
+
+        function manageRequest(requestId) {
+            window.location.href = `manage-request.html?id=${requestId}`;
+        }
+
+        function showEditRequestForm(id) {
+            const request = requestCache.find((item) => Number(item.reqId) === Number(id));
+            if (!request) {
+                return;
+            }
+
+            document.getElementById('req_edit_id').value = request.reqId;
+            document.getElementById('req_edit_name').value = request.reqName || '';
+            RICH_EDITOR.get('req_edit_des').setHTML(request.reqDes || '');
+            renderGroupCheckboxes('editRequestGroups', (request.audience_groups || []).map((group) => group.groupId));
+            document.getElementById('editRequestPopup').style.display = 'block';
+        }
+
+        function hideEditRequestForm() {
+            document.getElementById('editRequestPopup').style.display = 'none';
+        }
+
+        async function updateRequest(event) {
+            event.preventDefault();
+            const reqId = document.getElementById('req_edit_id').value;
+
+            const payload = {
+                reqName: document.getElementById('req_edit_name').value.trim(),
+                reqDes: RICH_EDITOR.get('req_edit_des').getHTML(),
+                group_ids: getSelectedGroupIds('editRequestGroups')
+            };
+
+            try {
+                await API.put(`/requests/${reqId}`, payload);
+                showAlert('Cập nhật đợt lấy ý kiến thành công.', 'success');
+                hideEditRequestForm();
+                await loadRequests();
+            } catch (error) {
+                console.error(error);
+                showAlert(error.message || 'Không thể cập nhật đợt lấy ý kiến.', 'danger');
+            }
+        }
+
+        async function duplicateRequest(requestId) {
+            if (!confirm('Bạn có chắc chắn muốn nhân bản đợt lấy ý kiến này? Toàn bộ văn kiện, câu hỏi và nhóm đối tượng sẽ được sao chép.')) {
+                return;
+            }
+
+            try {
+                showLoading();
+                const response = await API.post(`/requests/${requestId}/duplicate`);
+                hideLoading();
+
+                if (response.success) {
+                    showAlert('Đã nhân bản đợt lấy ý kiến thành công.', 'success');
+                    if (confirm('Có chuyển ngay sang bản sao vừa tạo để tiếp tục biên tập không?')) {
+                        window.location.href = `manage-request.html?id=${response.newRequestId}`;
+                        return;
+                    }
+                    await loadRequests();
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Duplicate error:', error);
+                showAlert(error.message || 'Không thể nhân bản đợt lấy ý kiến.', 'danger');
+            }
+        }
+
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        RICH_EDITOR.create('reqDes', {
+            placeholder: 'Nhập nội dung trình bày, căn cứ hoặc yêu cầu triển khai...'
+        });
+        RICH_EDITOR.create('req_edit_des', {
+            placeholder: 'Cập nhật nội dung trình bày, căn cứ hoặc yêu cầu triển khai...'
+        });
+
+        if (!AUTH.requireAuth() || !AUTH.requireAdmin()) {
+            // Redirect handled by auth helper
+        } else {
+            loadAdminDashboard();
+        }
+    </script>
 </body>
 </html>

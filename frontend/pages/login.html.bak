@@ -257,11 +257,11 @@
         </div>
         
         <div class="text-center">
-            <a href="/pages/register.html" class="text-small">
+            <a href="register.html" class="text-small">
                 Chưa có tài khoản? Đăng ký ngay
             </a>
             <br>
-            <a href="/pages/forgot-password.html" class="text-small">
+            <a href="forgot-password.html" class="text-small">
                 Quên mật khẩu?
             </a>
         </div>
@@ -329,10 +329,10 @@
                     
                     // Redirect based on role
                     setTimeout(() => {
-                        if (data.user.role === 'ADMIN') {
-                            window.location.href = '/pages/admin-dashboard.html';
+                        if (data.user.user_role === 'ADMIN') {
+                            window.location.href = 'admin-dashboard.html';
                         } else {
-                            window.location.href = '/pages/user-dashboard.html';
+                            window.location.href = 'user-dashboard.html';
                         }
                     }, 1000);
                 } else {
@@ -352,10 +352,10 @@
         
         if (token && user) {
             const userData = JSON.parse(user);
-            if (userData.role === 'ADMIN') {
-                window.location.href = '/pages/admin-dashboard.html';
+            if (userData.user_role === 'ADMIN') {
+                window.location.href = 'admin-dashboard.html';
             } else {
-                window.location.href = '/pages/user-dashboard.html';
+                window.location.href = 'user-dashboard.html';
             }
         }
     </script>

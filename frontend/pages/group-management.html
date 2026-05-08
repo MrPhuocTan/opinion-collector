@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý nhóm đối tượng - Hệ thống Thu thập ý kiến</title>
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #B22222;
+            --secondary-gold: #FFD700;
+            --neutral-white: #FFFFFF;
+            --neutral-gray-bg: #F5F7FA;
+            --neutral-gray-border: #E0E0E0;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+        }
+
+        body {
+            display: flex;
+            margin: 0;
+            background-color: var(--neutral-gray-bg);
+            font-family: "Times New Roman", Times, serif;
+            color: var(--text-dark);
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: var(--primary-red);
+            position: fixed;
+            top: 0;
+            left: 0;
+            color: var(--neutral-white);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            color: rgba(255,255,255,0.85);
+        }
+
+        .nav-item.active,
+        .nav-item:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 2.5rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            color: var(--primary-red);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-red);
+            border-color: var(--primary-red);
+        }
+
+        .btn-danger {
+            background: #DC2626;
+            color: white;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .table th {
+            background: #f8fafc;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            margin: 0.15rem 0.2rem 0.15rem 0;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            background: #fff4db;
+            color: #8a4b00;
+            font-size: 0.85rem;
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+        }
+
+        .modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(680px, calc(100vw - 2rem));
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem 1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .department-grid {
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: 8px;
+            max-height: 240px;
+            overflow: auto;
+            padding: 0.5rem 1rem;
+            background: #fffdf7;
+        }
+
+        .department-option {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .department-option:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">Hệ thống Thu thập ý kiến Phường Xã</div>
+        <nav class="sidebar-nav">
+            <a href="/pages/admin-dashboard.html" class="nav-item">
+                <i class="fas fa-comments"></i>
+                <span>Quản lý Thu thập ý kiến</span>
+            </a>
+            <a href="/pages/user-management.html" class="nav-item">
+                <i class="fas fa-users-cog"></i>
+                <span>Quản lý Cán bộ Công vụ</span>
+            </a>
+            <a href="/pages/department-management.html" class="nav-item">
+                <i class="fas fa-sitemap"></i>
+                <span>Quản lý Ban, Phòng, Đơn vị</span>
+            </a>
+            <a href="/pages/group-management.html" class="nav-item active">
+                <i class="fas fa-people-group"></i>
+                <span>Nhóm Đối tượng lấy ý kiến</span>
+            </a>
+            <a href="/pages/admin-report.html" class="nav-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>Báo cáo khảo sát</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="btn btn-secondary" onclick="AUTH.logout()">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <section class="content-card">
+            <div class="section-header">
+                <div>
+                    <h1 class="section-title">Nhóm đối tượng lấy ý kiến</h1>
+                    <p style="margin:0.5rem 0 0; color:#64748b;">Khai báo các nhóm đối tượng để phân luồng đợt lấy ý kiến theo đơn vị chuyên trách.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openGroupModal()">
+                    <i class="fas fa-plus"></i> Tạo nhóm
+                </button>
+            </div>
+            <div id="groupsTableContainer"></div>
+        </section>
+    </main>
+
+    <div class="modal-backdrop" id="groupModalBackdrop">
+        <div class="modal">
+            <h2 style="margin-top:0; color:#B22222;">Thiết lập nhóm đối tượng</h2>
+            <form id="groupForm">
+                <input type="hidden" id="groupId">
+                <div class="form-group">
+                    <label class="form-label">Tên nhóm đối tượng</label>
+                    <input id="groupName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mô tả nghiệp vụ</label>
+                    <textarea id="groupDescription" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Đơn vị áp dụng</label>
+                    <div id="departmentOptions" class="department-grid"></div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeGroupModal()">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu cấu hình</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let groups = [];
+        let departments = [];
+
+        if (!AUTH.requireAuth() || !AUTH.requireAdmin()) {
+            // Redirect handled by auth helper
+        } else {
+            initialize();
+        }
+
+        async function initialize() {
+            await Promise.all([loadDepartments(), loadGroups()]);
+        }
+
+        async function loadDepartments() {
+            const response = await API.get('/departments');
+            departments = response.departments || [];
+            renderDepartmentOptions();
+        }
+
+        async function loadGroups() {
+            try {
+                const response = await API.get('/groups');
+                groups = response.groups || [];
+                renderGroups();
+            } catch (error) {
+                console.error(error);
+                showAlert('Không thể tải danh mục nhóm đối tượng.', 'danger');
+            }
+        }
+
+        function renderDepartmentOptions(selectedIds = []) {
+            const selectedSet = new Set((selectedIds || []).map(Number));
+            const container = document.getElementById('departmentOptions');
+
+            container.innerHTML = departments.map((department) => `
+                <label class="department-option">
+                    <input type="checkbox" value="${department.departmentId}" ${selectedSet.has(Number(department.departmentId)) ? 'checked' : ''}>
+                    <span>${escapeHtml(department.name)}</span>
+                </label>
+            `).join('');
+        }
+
+        function renderGroups() {
+            const container = document.getElementById('groupsTableContainer');
+
+            if (!groups.length) {
+                container.innerHTML = '<p style="color:#64748b;">Chưa có nhóm đối tượng nào được thiết lập.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tên nhóm</th>
+                            <th>Mô tả</th>
+                            <th>Đơn vị áp dụng</th>
+                            <th>Số đợt đang dùng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${groups.map((group) => `
+                            <tr>
+                                <td><strong>${escapeHtml(group.groupName)}</strong></td>
+                                <td>${escapeHtml(group.groupDescription || 'Chưa cập nhật')}</td>
+                                <td>
+                                    ${(group.departments || []).map((department) => `
+                                        <span class="badge">${escapeHtml(department.name)}</span>
+                                    `).join('')}
+                                </td>
+                                <td>${group.request_count || 0}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="editGroup(${group.groupId})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" onclick="deleteGroup(${group.groupId})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function openGroupModal() {
+            document.getElementById('groupForm').reset();
+            document.getElementById('groupId').value = '';
+            renderDepartmentOptions();
+            document.getElementById('groupModalBackdrop').style.display = 'block';
+        }
+
+        function closeGroupModal() {
+            document.getElementById('groupModalBackdrop').style.display = 'none';
+        }
+
+        function getSelectedDepartmentIds() {
+            return Array.from(document.querySelectorAll('#departmentOptions input[type="checkbox"]:checked'))
+                .map((checkbox) => Number(checkbox.value));
+        }
+
+        function editGroup(groupId) {
+            const group = groups.find((item) => Number(item.groupId) === Number(groupId));
+            if (!group) return;
+
+            document.getElementById('groupId').value = group.groupId;
+            document.getElementById('groupName').value = group.groupName || '';
+            document.getElementById('groupDescription').value = group.groupDescription || '';
+            renderDepartmentOptions((group.departments || []).map((department) => department.departmentId));
+            document.getElementById('groupModalBackdrop').style.display = 'block';
+        }
+
+        async function deleteGroup(groupId) {
+            if (!confirm('Bạn có chắc chắn muốn ngừng sử dụng nhóm đối tượng này?')) {
+                return;
+            }
+
+            try {
+                await API.delete(`/groups/${groupId}`);
+                showAlert('Đã ngừng sử dụng nhóm đối tượng.', 'success');
+                await loadGroups();
+            } catch (error) {
+                showAlert(error.message || 'Không thể ngừng sử dụng nhóm đối tượng.', 'danger');
+            }
+        }
+
+        document.getElementById('groupForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const payload = {
+                groupName: document.getElementById('groupName').value.trim(),
+                groupDescription: document.getElementById('groupDescription').value.trim(),
+                department_ids: getSelectedDepartmentIds()
+            };
+
+            const groupId = document.getElementById('groupId').value;
+
+            try {
+                if (groupId) {
+                    await API.put(`/groups/${groupId}`, payload);
+                    showAlert('Đã cập nhật nhóm đối tượng.', 'success');
+                } else {
+                    await API.post('/groups', payload);
+                    showAlert('Đã tạo nhóm đối tượng.', 'success');
+                }
+
+                closeGroupModal();
+                await loadGroups();
+            } catch (error) {
+                showAlert(error.message || 'Không thể lưu cấu hình nhóm đối tượng.', 'danger');
+            }
+        });
+    </script>
+</body>
+</html>

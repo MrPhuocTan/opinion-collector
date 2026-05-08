@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Request - Hệ thống Thu thập ý kiến</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #B22222;
+            --secondary-gold: #FFD700;
+            --neutral-white: #FFFFFF;
+            --neutral-gray-bg: #F5F7FA;
+            --neutral-gray-border: #E0E0E0;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --info-blue: #3498DB;
+            --success-green: #2ECC71;
+            --danger-red: #DC2626;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --container-padding: 2.5rem;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        body {
+            background-color: var(--neutral-gray-bg);
+            font-family: "Times New Roman", Times, serif;
+            color: var(--text-dark);
+        }
+        .header {
+            background: var(--primary-red);
+            padding: 1.5rem 0;
+            border-bottom: 3px solid var(--secondary-gold);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+        }
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .header-content h1 {
+            color: var(--neutral-white);
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: "Times New Roman", Times, serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .header-content p {
+            color: rgba(255,255,255,0.8);
+            margin: 0.25rem 0 0;
+            font-style: italic;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 1.5rem;
+            border-bottom: 2px solid var(--neutral-gray-border);
+            margin-bottom: 2rem;
+        }
+        .tab {
+            padding: 1rem 0;
+            cursor: pointer;
+            color: var(--text-light);
+            font-weight: 600;
+            position: relative;
+            transition: color 0.2s;
+        }
+        .tab:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 100%;
+            height: 3px;
+            background-color: transparent;
+            transition: background-color 0.2s;
+        }
+        .tab:hover {
+            color: var(--primary-red);
+        }
+        .tab.active {
+            color: var(--primary-red);
+        }
+        .tab.active:after {
+            background-color: var(--primary-red);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .btn {
+            display: inline-flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            border: 1px solid transparent;
+            font-family: "Times New Roman", Times, serif;
+        }
+        .btn-outline {
+            background: #891a1a;
+            color: var(--neutral-white);
+            border: 2px solid transparent;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1rem;
+        }
+        .btn-outline:hover {
+            background-color: rgba(255,215,0,0.1);
+            color: var(--secondary-gold);
+            border-color: var(--secondary-gold);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255,215,0,0.2);
+        }
+        .btn-primary {
+            background: var(--primary-red);
+            color: var(--neutral-white);
+            border-color: var(--primary-red);
+        }
+        .btn-primary:hover {
+            background: #A01C1C;
+            border-color: #A01C1C;
+        }
+        .btn-danger {
+            background: var(--danger-red);
+            color: var(--neutral-white);
+            border-color: var(--danger-red);
+        }
+        .btn-danger:hover {
+            background: #B01E1E;
+            border-color: #B01E1E;
+        }
+        .btn-warning {
+            background: #FFA500;
+            color: var(--neutral-white);
+            border-color: #FFA500;
+        }
+        .btn-warning:hover {
+            background: #FF8C00;
+            border-color: #FF8C00;
+        }
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .card {
+            background: var(--neutral-white);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--neutral-gray-border);
+        }
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--neutral-gray-border);
+            background-color: #F8F9FB;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-red);
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .form-control, select, textarea, input[type="text"], input[type="file"] {
+            width: 100%;
+            border: 1px solid var(--neutral-gray-border);
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem 1rem;
+            background: var(--neutral-white);
+            font-family: "Times New Roman", Times, serif;
+            color: var(--text-dark);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus, select:focus, textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px rgba(178, 34, 34, 0.2);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+        .upload-area {
+            border: 2px dashed #D1D5DB;
+            border-radius: var(--border-radius-md);
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: var(--neutral-white);
+        }
+        .upload-area:hover { 
+            border-color: var(--primary-red); 
+            background: #F8F9FB; 
+        }
+        .upload-area.dragover { 
+            border-color: var(--primary-red); 
+            background: #F0F3F7; 
+        }
+        .document-list, .question-list { 
+            display: grid; 
+            gap: 1.25rem; 
+        }
+        .document-item, .question-item {
+            background: var(--neutral-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--neutral-gray-border);
+            transition: transform 0.2s;
+        }
+        .document-item:hover, .question-item:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        .text-small { font-size: .9rem;}
+        .text-muted { color: var(--text-light);}
+        .mt-3 { margin-top: 1.5rem;}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1 id="requestName">Loading...</h1>
+                <p class="text-muted" id="requestDescription"></p>
+            </div>
+            <div>
+                <a href="/pages/admin-dashboard.html" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab(event,'documents')">
+                <i class="fas fa-file-pdf"></i> Văn kiện
+            </div>
+            <div class="tab" onclick="showTab(event,'questions')">
+                <i class="fas fa-question-circle"></i> Câu hỏi
+            </div>
+        </div>
+
+        <div id="documents-tab" class="tab-content active">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Upload văn kiện PDF</h3></div>
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                        <p class="mt-2">Kéo thả file PDF vào đây hoặc click để chọn</p>
+                        <p class="text-small text-muted">Tối đa 10MB</p>
+                        <input type="file" id="fileInput" accept=".pdf" style="display:none;">
+                    </div>
+                    <form id="documentForm" style="display:none; margin-top:1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Mô tả văn kiện</label>
+                            <textarea id="docDes" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Số hiệu văn bản</label>
+                            <input type="text" id="docNum" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-header"><h3 class="card-title">Danh sách văn kiện</h3></div>
+                <div class="card-body">
+                    <div id="documentsList" class="document-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="questions-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Thêm câu hỏi mới</h3></div>
+                <div class="card-body">
+                    <form id="questionForm">
+                        <div class="form-group">
+                            <label class="form-label">Chọn văn kiện</label>
+                            <select id="docId" class="form-control" required>
+                                <option value="">-- Chọn văn kiện --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nội dung câu hỏi</label>
+                            <textarea id="queDes" class="form-control" rows="2" required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Loại câu hỏi</label>
+                                <select id="queType" class="form-control">
+                                    <option value="BOOLEAN">Số lượng thống nhất và ý kiến khác</option>
+                                    <option value="TEXT">Văn bản</option>
+                                    <option value="NUMBER">Số</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Đáp án mẫu (nếu có)</label>
+                                <input type="text" id="quesAns" class="form-control">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Thêm câu hỏi
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-header"><h3 class="card-title">Danh sách câu hỏi</h3></div>
+                <div class="card-body">
+                    <div id="questionsList" class="question-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal cập nhật câu hỏi -->
+    <div id="editModalOverlay" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000;">
+        <div style="background: white; max-width: 600px; margin: 5% auto; padding: 2rem; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); position: relative; font-family: 'Times New Roman', Times, serif;">
+            <h3 style="margin-top: 0; color: var(--primary-red); font-weight: 700;">
+                <i class="fas fa-edit"></i> Cập nhật câu hỏi
+            </h3>
+            <form id="editQuestionForm">
+                <input type="hidden" id="edit_que_id">
+                
+                <div class="form-group">
+                    <label class="form-label">Văn kiện:</label>
+                    <select id="edit_question_doc_id" class="form-control" required>
+                        <!-- Options sẽ được load động -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nội dung câu hỏi</label>
+                    <textarea id="edit_que_des" class="form-control" rows="2" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Loại câu hỏi</label>
+                        <select id="edit_que_type" class="form-control">
+                            <option value="BOOLEAN">Số lượng thống nhất và ý kiến khác</option>
+                            <option value="TEXT">Văn bản</option>
+                            <option value="NUMBER">Số</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Đáp án mẫu (nếu có)</label>
+                        <input type="text" id="edit_ques_ans" class="form-control">
+                    </div>
+                </div>
+                
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Lưu
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeEditForm()">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Popup sửa document -->
+    <div id="editDocumentPopup" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid #ccc; border-radius: 8px; padding: 2rem; width: 500px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <h4 style="margin-top: 0; color: var(--primary-red);">
+                <i class="fas fa-edit"></i> Sửa văn kiện
+            </h4>
+            <form id="editDocumentForm" onsubmit="updateDocument(event)">
+                <input type="hidden" id="edit_document_id" name="edit_document_id">
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom: 0.5rem;">Mô tả:</label>
+                    <textarea id="edit_doc_des" class="form-control" rows="3" required></textarea>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom: 0.5rem;">Số hiệu:</label>
+                    <input type="text" id="edit_doc_num" class="form-control">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-weight:600; margin-bottom: 0.5rem;">
+                        File PDF mới (tùy chọn):
+                    </label>
+                    <input type="file" id="edit_doc_file" accept=".pdf" class="form-control">
+                    <small style="color: #666;">Để trống nếu không muốn thay đổi file</small>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Cập nhật
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeEditDocument()">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/rich-editor.js"></script>
+    <script>
+        const requestId = getUrlParam('id');
+        let currentRequest = null;
+        let selectedFile = null;
+        let documents = [];
+        let questionIndexMap = {};
+
+        if (!requestId) {
+            alert('Request không tồn tại');
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        // Auth check
+        if (AUTH.requireAuth() && AUTH.requireAdmin()) {
+            loadRequestDetails();
+        }
+
+        // ================= Core Loaders =================
+        async function loadRequestDetails() {
+            try {
+                const response = await API.get(CONFIG.ENDPOINTS.REQUEST_BY_ID(requestId));
+                currentRequest = response.request;
+                documents = response.documents || [];
+                questionIndexMap = {};
+                document.getElementById("requestName").textContent = currentRequest.reqName;
+                document.getElementById("requestDescription").innerHTML = renderRichText(currentRequest.reqDes || "");
+                displayDocuments();
+                displayQuestions();
+                updateDocumentSelect();
+            } catch (error) {
+                console.error("Error loading request:", error);
+                showAlert("Không thể tải thông tin request", "danger");
+            }
+        }
+
+        async function deleteDocument(docId) {
+            if (!confirm("Bạn có chắc muốn xóa văn kiện này?")) return;
+            try {
+                await API.delete(`/documents/${docId}`);
+                showAlert("Xóa văn kiện thành công", "success");
+                await loadRequestDetails();
+            } catch (error) {
+                console.error(error);
+                showAlert("Không thể xóa văn kiện", "danger");
+            }
+        }
+
+        async function updateDocument(event) {
+            event.preventDefault();
+            
+            const docId = document.getElementById('edit_document_id').value;
+            
+            if (!docId) {
+                alert("Không tìm thấy ID văn kiện");
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('docDes', RICH_EDITOR.get('edit_doc_des').getHTML());
+            formData.append('docNum', document.getElementById('edit_doc_num').value || '');
+            
+            const fileInput = document.getElementById('edit_doc_file');
+            if (fileInput && fileInput.files.length > 0) {
+                formData.append('pdf', fileInput.files[0]);
+            }
+            
+            try {
+                const url = `${CONFIG.API_URL}/documents/${docId}`;
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${AUTH.getToken()}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Update failed');
+                    } else {
+                        throw new Error(`Update failed with status ${response.status}`);
+                    }
+                }
+
+                const result = await response.json();
+                showAlert("Cập nhật văn kiện thành công", "success");
+                closeEditDocument();
+                await loadRequestDetails();
+                
+            } catch (error) {
+                console.error("Update document error:", error);
+                showAlert("Cập nhật văn kiện thất bại: " + error.message, "danger");
+            }
+        }
+
+        async function deleteQuestion(queId) {
+            if (!confirm("Bạn có chắc muốn xóa câu hỏi này?")) return;
+            try {
+                await API.delete(`/questions/${queId}`);
+                showAlert("Xóa câu hỏi thành công", "success");
+                await loadRequestDetails();
+            } catch (error) {
+                console.error(error);
+                showAlert("Không thể xóa câu hỏi", "danger");
+            }
+        }
+
+        // ================= Renderers =================
+        function displayDocuments() {
+            const container = document.getElementById('documentsList');
+            if (!documents || documents.length === 0) {
+                container.innerHTML = '<p class="text-muted">Chưa có văn kiện nào</p>';
+                return;
+            }
+            
+            window.documentsData = documents;
+            
+            container.innerHTML = documents.map((doc, index) => `
+                <div class="document-item">
+                    <div>
+                        <div style="font-size:1.1rem; font-weight:700;">${renderRichText(doc.docDes)}</div>
+                        <p class="text-small text-muted">
+                            Số hiệu: ${doc.docNum ? escapeHtml(doc.docNum) : 'N/A'} | 
+                            ${doc.question_count || 0} câu hỏi
+                        </p>
+                    </div>
+                    <div>
+                        <a href="${buildPdfUrl(doc.pdfUrl)}" target="_blank" class="btn btn-sm btn-outline">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button class="btn btn-sm btn-warning" onclick="showEditDocumentForm(${index})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDocument(${Number(doc.docId)})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showEditDocumentForm(index) {
+            const doc = window.documentsData[index];
+            
+            if (!doc) {
+                alert('Không tìm thấy văn kiện');
+                return;
+            }
+            
+            document.getElementById('editModalOverlay').style.display = 'none';
+            document.getElementById('edit_document_id').value = doc.docId;
+            RICH_EDITOR.get('edit_doc_des').setHTML(doc.docDes || '');
+            document.getElementById('edit_doc_num').value = doc.docNum || '';
+            
+            const fileInput = document.getElementById('edit_doc_file');
+            if (fileInput) fileInput.value = '';
+            
+            document.getElementById('editDocumentPopup').style.display = 'block';
+        }
+
+        function closeEditDocument() {
+            document.getElementById('editDocumentPopup').style.display = 'none';
+            RICH_EDITOR.get('edit_doc_des').setHTML('');
+        }
+
+        function displayQuestions() {
+            const container = document.getElementById('questionsList');
+            const allQuestions = [];
+            
+            documents.forEach(doc => {
+                if (doc.questions) {
+                    doc.questions.forEach(q => {
+                        questionIndexMap[q.queId] = q;
+                        allQuestions.push({
+                            ...q,
+                            docDes: doc.docDes
+                        });
+                    });
+                }
+            });
+            
+            if (allQuestions.length === 0) {
+                container.innerHTML = '<p class="text-muted">Chưa có câu hỏi nào</p>';
+                return;
+            }
+            
+            container.innerHTML = allQuestions.map(q => {
+                let typeLabel = 'Unknown';
+                if (q.queType === 'BOOLEAN') typeLabel = 'Số lượng thống nhất và ý kiến khác';
+                else if (q.queType === 'TEXT') typeLabel = 'Văn bản';
+                else if (q.queType === 'NUMBER') typeLabel = 'Số';
+                
+                return `
+                    <div class="question-item">
+                        <div>
+                            <div style="font-weight:700;">${renderRichText(q.queDes)}</div>
+                            <p class="text-small text-muted">
+                                ${stripHtml(q.docDes)} | 
+                                Loại: ${typeLabel}
+                                ${q.quesAns ? ` | Đáp án mẫu: ${escapeHtml(q.quesAns)}` : ''}
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${Number(q.queId)})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="showEditForm(${Number(q.queId)})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateDocumentSelect() {
+            const select = document.getElementById('docId');
+            select.innerHTML = '<option value="">-- Chọn văn kiện --</option>';
+            documents.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.docId;
+                option.textContent = stripHtml(doc.docDes || '') || `Văn kiện ${doc.docId}`;
+                select.appendChild(option);
+            });
+        }
+
+        // ================= Tabs =================
+        function showTab(evt, tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            evt.target.closest('.tab').classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // ================= Upload Handlers =================
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'application/pdf') {
+                    handleFileSelect(files);
+                } else {
+                    showAlert('Vui lòng chọn file PDF', 'warning');
+                }
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files);
+            }
+        });
+
+function handleFileSelect(files) {
+            const file = files[0];
+            
+            if (!file) {
+                showAlert('Không có file được chọn', 'warning');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('File quá lớn. Tối đa 10MB', 'danger');
+                return;
+            }
+            
+            selectedFile = file;
+            uploadArea.innerHTML = `
+                <i class="fas fa-file-pdf fa-3x" style="color:#DC2626"></i>
+                <p class="mt-2">${escapeHtml(file.name)}</p>
+                <p class="text-small text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            `;
+            document.getElementById('documentForm').style.display = 'block';
+        }
+
+        document.getElementById('documentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!selectedFile) {
+                showAlert('Vui lòng chọn file PDF', 'warning');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('pdf', selectedFile);
+            formData.append('reqId', requestId);
+            formData.append('docDes', RICH_EDITOR.get('docDes').getHTML());
+            formData.append('docNum', document.getElementById('docNum').value);
+            
+            try {
+                await API.upload(CONFIG.ENDPOINTS.UPLOAD_DOCUMENT, formData);
+                showAlert('Upload văn kiện thành công!', 'success');
+                
+                document.getElementById('documentForm').reset();
+                RICH_EDITOR.get('docDes').setHTML('');
+                document.getElementById('documentForm').style.display = 'none';
+                
+                uploadArea.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                    <p class="mt-2">Kéo thả file PDF vào đây hoặc click để chọn</p>
+                    <p class="text-small text-muted">Tối đa 10MB</p>
+                    <input type="file" id="fileInput" accept=".pdf" style="display:none;">
+                `;
+                
+                bindNewFileInput();
+                selectedFile = null;
+                await loadRequestDetails();
+                
+            } catch (error) {
+                console.error(error);
+                showAlert('Không thể upload văn kiện', 'danger');
+            }
+        });
+
+        function bindNewFileInput() {
+            const newFileInput = uploadArea.querySelector('#fileInput');
+            if (newFileInput) {
+                newFileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleFileSelect(e.target.files);
+                    }
+                });
+            }
+        }
+
+        // ================= Question Create =================
+        document.getElementById('questionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const questionData = {
+                docId: document.getElementById('docId').value,
+                queDes: RICH_EDITOR.get('queDes').getHTML(),
+                queType: document.getElementById('queType').value,
+                quesAns: document.getElementById('quesAns').value || null
+            };
+            
+            try {
+                await API.post('/questions', questionData);
+                showAlert('Thêm câu hỏi thành công!', 'success');
+                document.getElementById('questionForm').reset();
+                RICH_EDITOR.get('queDes').setHTML('');
+                await loadRequestDetails();
+            } catch (error) {
+                console.error(error);
+                showAlert('Không thể thêm câu hỏi', 'danger');
+            }
+        });
+
+        // Edit Question Functions
+        function showEditForm(questionId) {
+            const question = questionIndexMap[questionId];
+            if (!question) {
+                showAlert('Không tìm thấy câu hỏi cần biên tập.', 'warning');
+                return;
+            }
+            document.getElementById('editDocumentPopup').style.display = 'none';
+            
+            const select = document.getElementById('edit_question_doc_id');
+            select.innerHTML = '';
+            documents.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.docId;
+                option.textContent = stripHtml(doc.docDes || '') || `Văn kiện ${doc.docId}`;
+                option.selected = doc.docId === question.docId;
+                select.appendChild(option);
+            });
+            
+            document.getElementById('edit_que_id').value = question.queId;
+            RICH_EDITOR.get('edit_que_des').setHTML(question.queDes || '');
+            document.getElementById('edit_que_type').value = question.queType;
+            document.getElementById('edit_ques_ans').value = question.quesAns || '';
+            document.getElementById('editModalOverlay').style.display = 'block';
+        }
+
+        function closeEditForm() {
+            document.getElementById('editModalOverlay').style.display = 'none';
+            RICH_EDITOR.get('edit_que_des').setHTML('');
+        }
+
+        document.getElementById('editQuestionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const queId = document.getElementById('edit_que_id').value;
+            const data = {
+                docId: document.getElementById('edit_question_doc_id').value,
+                queDes: RICH_EDITOR.get('edit_que_des').getHTML(),
+                queType: document.getElementById('edit_que_type').value,
+                quesAns: document.getElementById('edit_ques_ans').value || null
+            };
+            
+            try {
+                await API.put(`/questions/${queId}`, data);
+                showAlert("Cập nhật câu hỏi thành công", "success");
+                closeEditForm();
+                await loadRequestDetails();
+            } catch (error) {
+                console.error(error);
+                showAlert("Không thể cập nhật câu hỏi", "danger");
+            }
+        });
+
+        // Helper Functions
+        // Document Select Memory
+        const selectDoc = document.getElementById("docId");
+        selectDoc.addEventListener("change", function () {
+            localStorage.setItem("selectedDocId", this.value);
+        });
+
+        window.addEventListener("DOMContentLoaded", function () {
+            const savedDocId = localStorage.getItem("selectedDocId");
+            if (savedDocId) {
+                selectDoc.value = savedDocId;
+            }
+        });
+
+        RICH_EDITOR.create('docDes', {
+            placeholder: 'Nhập mô tả, căn cứ hoặc ghi chú của văn kiện...'
+        });
+        RICH_EDITOR.create('edit_doc_des', {
+            placeholder: 'Cập nhật mô tả, căn cứ hoặc ghi chú của văn kiện...'
+        });
+        RICH_EDITOR.create('queDes', {
+            placeholder: 'Nhập nội dung câu hỏi theo văn phong hành chính...'
+        });
+        RICH_EDITOR.create('edit_que_des', {
+            placeholder: 'Cập nhật nội dung câu hỏi theo văn phong hành chính...'
+        });
+    </script>
+</body>
+</html>
